@@ -2,6 +2,7 @@ import { EmailProvider } from "../../domain";
 import { IMailer } from "../../ports";
 import { ResendMailer } from "./resendMailer";
 import { MailgunMailer } from "./mailgunMailer";
+import { SesMailer } from "./sesMailer";
 
 export class MailerFactory {
   static create(provider: EmailProvider): IMailer {
@@ -18,15 +19,25 @@ export class MailerFactory {
         const { apiKey, domain, region } = provider.config || {};
         if (!apiKey || !domain) {
           throw new Error(
-            "Mailgun API key and domain are required in provider config"
+            "Mailgun API key and domain are required in provider config",
           );
         }
         return new MailgunMailer({ apiKey, domain, region });
       }
 
+      case "SES": {
+        const { region, accessKeyId, secretAccessKey } = provider.config || {};
+        if (!region || !accessKeyId || !secretAccessKey) {
+          throw new Error(
+            "SES region, accessKeyId, and secretAccessKey are required in provider config",
+          );
+        }
+        return new SesMailer({ region, accessKeyId, secretAccessKey });
+      }
+
       default:
         throw new Error(
-          `Unsupported email provider type: ${(provider as any).type}`
+          `Unsupported email provider type: ${(provider as any).type}`,
         );
     }
   }
@@ -34,4 +45,6 @@ export class MailerFactory {
 
 export { ResendMailer } from "./resendMailer";
 export { MailgunMailer } from "./mailgunMailer";
+export { SesMailer } from "./sesMailer";
 export type { MailgunConfig } from "./mailgunMailer";
+export type { SesConfig } from "./sesMailer";

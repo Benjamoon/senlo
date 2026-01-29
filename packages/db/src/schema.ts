@@ -103,6 +103,7 @@ export const campaignEventTypeEnum = pgEnum("campaign_event_type", [
 export const emailProviderTypeEnum = pgEnum("email_provider_type", [
   "RESEND",
   "MAILGUN",
+  "SES",
 ]);
 
 export const aiProviderTypeEnum = pgEnum("ai_provider_type", [

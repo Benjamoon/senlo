@@ -10,10 +10,33 @@ import { auth } from "apps/web/auth";
 
 const providerRepo = new EmailProviderRepository();
 
+export type CreateProviderError = {
+  error: {
+    formErrors: string[];
+    fieldErrors: {
+      name?: string[];
+      type?: string[];
+      apiKey?: string[];
+      domain?: string[];
+      region?: string[];
+      accessKeyId?: string[];
+      secretAccessKey?: string[];
+      general?: string[];
+    };
+  };
+};
+
+export type CreateProviderResult =
+  | { success: true; data: EmailProvider }
+  | CreateProviderError;
+
 export async function listProviders(): Promise<ActionResult<EmailProvider[]>> {
   const session = await auth();
   if (!session?.user?.id) {
-    return { success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized', statusCode: 401 } };
+    return {
+      success: false,
+      error: { code: "UNAUTHORIZED", message: "Unauthorized", statusCode: 401 },
+    };
   }
 
   const userId = session.user.id;
@@ -24,7 +47,9 @@ export async function listProviders(): Promise<ActionResult<EmailProvider[]>> {
   });
 }
 
-export async function createProviderAction(formData: FormData) {
+export async function createProviderAction(
+  formData: FormData,
+): Promise<CreateProviderResult> {
   const session = await auth();
   if (!session?.user?.id) {
     return { error: { formErrors: ["Unauthorized"], fieldErrors: {} } };
@@ -38,17 +63,31 @@ export async function createProviderAction(formData: FormData) {
     };
   }
 
-  const { name, type, apiKey, domain, region } = parsed.data;
+  const { name, type, apiKey, domain, region, accessKeyId, secretAccessKey } =
+    parsed.data;
 
   try {
-    let config: Record<string, string> = { apiKey };
+    let config: Record<string, string> = {};
 
-    if (type === "MAILGUN") {
-      if (!domain) {
+    if (type === "RESEND") {
+      if (!apiKey) {
         return {
           error: {
             formErrors: [],
-            fieldErrors: { domain: ["Mailgun domain is required"] },
+            fieldErrors: { apiKey: ["Resend API key is required"] },
+          },
+        };
+      }
+      config = { apiKey };
+    } else if (type === "MAILGUN") {
+      if (!apiKey || !domain) {
+        return {
+          error: {
+            formErrors: [],
+            fieldErrors: {
+              apiKey: !apiKey ? ["Mailgun API key is required"] : undefined,
+              domain: !domain ? ["Mailgun domain is required"] : undefined,
+            },
           },
         };
       }
@@ -57,6 +96,29 @@ export async function createProviderAction(formData: FormData) {
         apiKey,
         domain,
         region: region || "US",
+      };
+    } else if (type === "SES") {
+      if (!accessKeyId || !secretAccessKey || !region) {
+        return {
+          error: {
+            formErrors: [],
+            fieldErrors: {
+              accessKeyId: !accessKeyId
+                ? ["Access Key ID is required"]
+                : undefined,
+              secretAccessKey: !secretAccessKey
+                ? ["Secret Access Key is required"]
+                : undefined,
+              region: !region ? ["Region is required"] : undefined,
+            },
+          },
+        };
+      }
+
+      config = {
+        accessKeyId,
+        secretAccessKey,
+        region,
       };
     }
 
@@ -98,7 +160,9 @@ export async function createProviderAction(formData: FormData) {
   }
 }
 
-export async function deleteProviderAction(id: number): Promise<ActionResult<void>> {
+export async function deleteProviderAction(
+  id: number,
+): Promise<ActionResult<void>> {
   return withErrorHandling(async () => {
     logger.debug("Deleting email provider", { providerId: id });
     await providerRepo.delete(id);
@@ -106,9 +170,15 @@ export async function deleteProviderAction(id: number): Promise<ActionResult<voi
   });
 }
 
-export async function toggleProviderAction(id: number, isActive: boolean): Promise<ActionResult<EmailProvider>> {
+export async function toggleProviderAction(
+  id: number,
+  isActive: boolean,
+): Promise<ActionResult<EmailProvider>> {
   return withErrorHandling(async () => {
-    logger.debug("Toggling email provider status", { providerId: id, isActive });
+    logger.debug("Toggling email provider status", {
+      providerId: id,
+      isActive,
+    });
     const updatedProvider = await providerRepo.update(id, { isActive });
     if (!updatedProvider) {
       throw new Error("Provider not found");

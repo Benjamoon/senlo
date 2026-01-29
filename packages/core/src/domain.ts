@@ -85,7 +85,7 @@ export interface CampaignEvent {
   occurredAt: Date;
 }
 
-export type EmailProviderType = "RESEND" | "MAILGUN";
+export type EmailProviderType = "RESEND" | "MAILGUN" | "SES";
 
 export interface EmailProvider {
   id: number;

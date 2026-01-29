@@ -15,6 +15,7 @@ import {
 import { Plus } from "lucide-react";
 import { useCreateProvider } from "apps/web/queries/providers";
 import type { EmailProviderType } from "@senlo/core";
+import { CreateProviderError } from "./actions";
 
 export function AddProviderDialog() {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,35 +33,30 @@ export function AddProviderDialog() {
         setType("RESEND");
         form.reset();
       },
-      onError: (error) => {
+      onError: (error: CreateProviderError) => {
         // Handle field errors from the server action
-        if (
-          error &&
-          typeof error === "object" &&
-          "error" in error &&
-          error.error
-        ) {
-          const fieldErrors = (error.error as any).fieldErrors;
-          let errorMessage = "Validation failed";
+        const fieldErrors = error.error?.fieldErrors;
+        let errorMessage = "Validation failed";
 
-          if (fieldErrors) {
-            if ("name" in fieldErrors && fieldErrors.name?.[0]) {
-              errorMessage = fieldErrors.name[0];
-            } else if ("type" in fieldErrors && fieldErrors.type?.[0]) {
-              errorMessage = fieldErrors.type[0];
-            } else if ("apiKey" in fieldErrors && fieldErrors.apiKey?.[0]) {
-              errorMessage = fieldErrors.apiKey[0];
-            } else if ("domain" in fieldErrors && fieldErrors.domain?.[0]) {
-              errorMessage = fieldErrors.domain[0];
-            } else if ("general" in fieldErrors && fieldErrors.general?.[0]) {
-              errorMessage = fieldErrors.general[0];
-            }
+        if (fieldErrors) {
+          if ("name" in fieldErrors && fieldErrors.name?.[0]) {
+            errorMessage = fieldErrors.name[0];
+          } else if ("type" in fieldErrors && fieldErrors.type?.[0]) {
+            errorMessage = fieldErrors.type[0];
+          } else if ("apiKey" in fieldErrors && fieldErrors.apiKey?.[0]) {
+            errorMessage = fieldErrors.apiKey[0];
+          } else if ("domain" in fieldErrors && fieldErrors.domain?.[0]) {
+            errorMessage = fieldErrors.domain[0];
+          } else if ("accessKeyId" in fieldErrors && fieldErrors.accessKeyId?.[0]) {
+            errorMessage = fieldErrors.accessKeyId[0];
+          } else if ("secretAccessKey" in fieldErrors && fieldErrors.secretAccessKey?.[0]) {
+            errorMessage = fieldErrors.secretAccessKey[0];
+          } else if ("general" in fieldErrors && fieldErrors.general?.[0]) {
+            errorMessage = fieldErrors.general[0];
           }
-
-          alert(`Error: ${errorMessage}`);
-        } else {
-          alert("Failed to create provider. Please try again.");
         }
+
+        alert(`Error: ${errorMessage}`);
       },
     });
   };
@@ -111,6 +107,7 @@ export function AddProviderDialog() {
               <SelectContent>
                 <SelectItem value="RESEND">Resend</SelectItem>
                 <SelectItem value="MAILGUN">Mailgun</SelectItem>
+                <SelectItem value="SES">Amazon SES</SelectItem>
               </SelectContent>
             </Select>
           </FormField>
@@ -166,6 +163,43 @@ export function AddProviderDialog() {
                     <SelectItem value="EU">EU (api.eu.mailgun.net)</SelectItem>
                   </SelectContent>
                 </Select>
+              </FormField>
+            </>
+          )}
+
+          {type === "SES" && (
+            <>
+              <FormField
+                label="Access Key ID"
+                required
+                hint="AWS IAM User Access Key ID"
+              >
+                <Input
+                  name="accessKeyId"
+                  placeholder="AKIA..."
+                  required
+                />
+              </FormField>
+
+              <FormField
+                label="Secret Access Key"
+                required
+                hint="AWS IAM User Secret Access Key"
+              >
+                <Input
+                  name="secretAccessKey"
+                  type="password"
+                  placeholder="xxxxxxxx"
+                  required
+                />
+              </FormField>
+
+              <FormField
+                label="Region"
+                required
+                hint="AWS Region where SES is configured"
+              >
+                <Input name="region" placeholder="us-east-1" required />
               </FormField>
             </>
           )}

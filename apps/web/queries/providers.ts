@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { EmailProvider } from "@senlo/core";
-import { 
+import {
   listProviders,
   createProviderAction,
   deleteProviderAction,
   toggleProviderAction,
+  type CreateProviderError,
 } from "../app/(app)/providers/actions";
 import { queryKeys } from "../providers";
 import { logger } from "../lib/logger";
@@ -14,11 +15,11 @@ import { logger } from "../lib/logger";
  */
 async function fetchProviders(): Promise<EmailProvider[]> {
   const result = await listProviders();
-  
+
   if (!result.success) {
     throw new Error(result.error.message);
   }
-  
+
   return result.data;
 }
 
@@ -38,10 +39,10 @@ export function useProviders() {
 export function useCreateProvider() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<EmailProvider, CreateProviderError, FormData>({
     mutationFn: async (formData: FormData) => {
       const result = await createProviderAction(formData);
-      if (!result.success) {
+      if ("error" in result) {
         throw result;
       }
       return result.data;
@@ -56,8 +57,8 @@ export function useCreateProvider() {
     },
     onSettled: () => {
       // Invalidate providers list to refresh UI
-      queryClient.invalidateQueries({ 
-        queryKey: queryKeys.emailProviders.lists() 
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.emailProviders.lists(),
       });
     },
   });
@@ -85,16 +86,16 @@ export function useDeleteProvider() {
     },
     onSuccess: (providerId) => {
       // Remove from individual provider cache
-      queryClient.removeQueries({ 
-        queryKey: queryKeys.emailProviders.detail(providerId) 
+      queryClient.removeQueries({
+        queryKey: queryKeys.emailProviders.detail(providerId),
       });
-      
+
       logger.info("Provider deleted successfully", { providerId });
     },
     onSettled: () => {
       // Invalidate providers list to refresh UI
-      queryClient.invalidateQueries({ 
-        queryKey: queryKeys.emailProviders.lists() 
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.emailProviders.lists(),
       });
     },
   });
@@ -107,7 +108,13 @@ export function useToggleProvider() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ providerId, isActive }: { providerId: number; isActive: boolean }) => {
+    mutationFn: async ({
+      providerId,
+      isActive,
+    }: {
+      providerId: number;
+      isActive: boolean;
+    }) => {
       const result = await toggleProviderAction(providerId, isActive);
       if (!result.success) {
         throw result;
@@ -124,24 +131,25 @@ export function useToggleProvider() {
       // Update the specific provider in cache
       queryClient.setQueryData(
         queryKeys.emailProviders.detail(providerId),
-        provider
+        provider,
       );
-      
+
       // Update provider in the list cache
       queryClient.setQueryData<EmailProvider[]>(
         queryKeys.emailProviders.list(),
-        (old) => old ? old.map(p => p.id === providerId ? provider : p) : []
+        (old) =>
+          old ? old.map((p) => (p.id === providerId ? provider : p)) : [],
       );
-      
-      logger.info("Provider status toggled successfully", { 
-        providerId, 
-        isActive: provider.isActive 
+
+      logger.info("Provider status toggled successfully", {
+        providerId,
+        isActive: provider.isActive,
       });
     },
     onSettled: () => {
       // Invalidate providers list to ensure consistency
-      queryClient.invalidateQueries({ 
-        queryKey: queryKeys.emailProviders.lists() 
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.emailProviders.lists(),
       });
     },
   });
