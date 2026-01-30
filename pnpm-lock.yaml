@@ -52,10 +52,10 @@ importers:
         specifier: ^1.7.4
         version: 1.11.1
       '@scalar/api-reference-react':
-        specifier: ^0.8.20
-        version: 0.8.20(react@19.2.1)(storybook@10.1.11)(tailwindcss@4.1.17)(typescript@5.9.3)
+        specifier: 0.8.20
+        version: 0.8.20(react@19.2.1)(storybook@10.2.3)(tailwindcss@4.1.17)(typescript@5.9.3)
       '@scalar/nextjs-api-reference':
-        specifier: ^0.9.9
+        specifier: 0.9.9
         version: 0.9.9(next@16.0.8)(react@19.2.1)
       '@senlo/core':
         specifier: workspace:^
@@ -3082,14 +3082,14 @@ packages:
       zod: 4.3.5
     dev: false
 
-  /@scalar/api-client@2.17.6(storybook@10.1.11)(tailwindcss@4.1.17)(typescript@5.9.3):
+  /@scalar/api-client@2.17.6(storybook@10.2.3)(tailwindcss@4.1.17)(typescript@5.9.3):
     resolution: {integrity: sha512-72cRTeqcYswnSlij+EdqdiDFQRGfdECOZl8hWF6dJItBge8YB5XLh+OfFzpmC/puvq/fyKiOsPTDw1hcS4OaBA==}
     engines: {node: '>=20'}
     dependencies:
       '@headlessui/tailwindcss': 0.2.2(tailwindcss@4.1.17)
       '@headlessui/vue': 1.7.23(vue@3.5.26)
       '@scalar/analytics-client': 1.0.1
-      '@scalar/components': 0.16.16(storybook@10.1.11)(typescript@5.9.3)
+      '@scalar/components': 0.16.16(storybook@10.2.3)(typescript@5.9.3)
       '@scalar/draggable': 0.3.0(typescript@5.9.3)
       '@scalar/helpers': 0.2.6
       '@scalar/icons': 0.5.2(typescript@5.9.3)
@@ -3100,11 +3100,11 @@ packages:
       '@scalar/openapi-parser': 0.23.11
       '@scalar/openapi-types': 0.5.3
       '@scalar/postman-to-openapi': 0.3.55(typescript@5.9.3)
-      '@scalar/sidebar': 0.7.6(storybook@10.1.11)(typescript@5.9.3)
+      '@scalar/sidebar': 0.7.6(storybook@10.2.3)(typescript@5.9.3)
       '@scalar/snippetz': 0.6.3
       '@scalar/themes': 0.13.26
       '@scalar/types': 0.5.6
-      '@scalar/use-codemirror': 0.13.10(storybook@10.1.11)(typescript@5.9.3)
+      '@scalar/use-codemirror': 0.13.10(storybook@10.2.3)(typescript@5.9.3)
       '@scalar/use-hooks': 0.3.5(typescript@5.9.3)
       '@scalar/use-toasts': 0.9.1(typescript@5.9.3)
       '@scalar/workspace-store': 0.24.4(typescript@5.9.3)
@@ -3143,13 +3143,13 @@ packages:
       - universal-cookie
     dev: false
 
-  /@scalar/api-reference-react@0.8.20(react@19.2.1)(storybook@10.1.11)(tailwindcss@4.1.17)(typescript@5.9.3):
+  /@scalar/api-reference-react@0.8.20(react@19.2.1)(storybook@10.2.3)(tailwindcss@4.1.17)(typescript@5.9.3):
     resolution: {integrity: sha512-s8zQUUoyy4HHgD5wclN35l9yc8LsJC9Zvgpg/y2e9GZ29PWRR+PCBc3xcWx3oa5zAT7tB4A+Y1HToKPTupBJFw==}
     engines: {node: '>=20'}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
     dependencies:
-      '@scalar/api-reference': 1.43.1(storybook@10.1.11)(tailwindcss@4.1.17)(typescript@5.9.3)
+      '@scalar/api-reference': 1.43.1(storybook@10.2.3)(tailwindcss@4.1.17)(typescript@5.9.3)
       '@scalar/types': 0.5.6
       react: 19.2.1
     transitivePeerDependencies:
@@ -3170,15 +3170,15 @@ packages:
       - universal-cookie
     dev: false
 
-  /@scalar/api-reference@1.43.1(storybook@10.1.11)(tailwindcss@4.1.17)(typescript@5.9.3):
+  /@scalar/api-reference@1.43.1(storybook@10.2.3)(tailwindcss@4.1.17)(typescript@5.9.3):
     resolution: {integrity: sha512-ZY7dOEBmhuccze4/lEKihOfvd/Qi5/JLBvd/PJwbRCIf5Js8FBVR+eRW2S0m/GGj7wSeDwUVqx1G+Ryr5QrB2A==}
     engines: {node: '>=20'}
     dependencies:
       '@floating-ui/vue': 1.1.9(vue@3.5.26)
       '@headlessui/vue': 1.7.23(vue@3.5.26)
-      '@scalar/api-client': 2.17.6(storybook@10.1.11)(tailwindcss@4.1.17)(typescript@5.9.3)
+      '@scalar/api-client': 2.17.6(storybook@10.2.3)(tailwindcss@4.1.17)(typescript@5.9.3)
       '@scalar/code-highlight': 0.2.2
-      '@scalar/components': 0.16.16(storybook@10.1.11)(typescript@5.9.3)
+      '@scalar/components': 0.16.16(storybook@10.2.3)(typescript@5.9.3)
       '@scalar/helpers': 0.2.6
       '@scalar/icons': 0.5.2(typescript@5.9.3)
       '@scalar/json-magic': 0.8.10
@@ -3187,7 +3187,7 @@ packages:
       '@scalar/openapi-parser': 0.23.11
       '@scalar/openapi-types': 0.5.3
       '@scalar/openapi-upgrader': 0.1.6
-      '@scalar/sidebar': 0.7.6(storybook@10.1.11)(typescript@5.9.3)
+      '@scalar/sidebar': 0.7.6(storybook@10.2.3)(typescript@5.9.3)
       '@scalar/snippetz': 0.6.3
       '@scalar/themes': 0.13.26
       '@scalar/types': 0.5.6
@@ -3246,7 +3246,7 @@ packages:
       - supports-color
     dev: false
 
-  /@scalar/components@0.16.16(storybook@10.1.11)(typescript@5.9.3):
+  /@scalar/components@0.16.16(storybook@10.2.3)(typescript@5.9.3):
     resolution: {integrity: sha512-fnaQAuGIxKcBnrB/Z0Xtlj1/LNPi6dxSn6eGc6V1z8pF3Omwj/AR8CuMdrwyy3dt/I8JMWL+9/6PF3iYd5ohLQ==}
     engines: {node: '>=20'}
     dependencies:
@@ -3259,7 +3259,7 @@ packages:
       '@scalar/oas-utils': 0.6.14(typescript@5.9.3)
       '@scalar/themes': 0.13.26
       '@scalar/use-hooks': 0.3.5(typescript@5.9.3)
-      '@vueless/storybook-dark-mode': 10.0.4(storybook@10.1.11)
+      '@vueless/storybook-dark-mode': 10.0.7(storybook@10.2.3)
       '@vueuse/core': 13.9.0(vue@3.5.26)
       cva: 1.0.0-beta.2(typescript@5.9.3)
       nanoid: 5.1.5
@@ -3406,11 +3406,11 @@ packages:
       - typescript
     dev: false
 
-  /@scalar/sidebar@0.7.6(storybook@10.1.11)(typescript@5.9.3):
+  /@scalar/sidebar@0.7.6(storybook@10.2.3)(typescript@5.9.3):
     resolution: {integrity: sha512-nPc93ndBMh9Jw4AylesC3nxDGmtPDuRuvscPkFPsz/oZ37d5GY2gsDKEvky+iNkz8aRE6y/OsJFVnKAjmF8KyA==}
     engines: {node: '>=20'}
     dependencies:
-      '@scalar/components': 0.16.16(storybook@10.1.11)(typescript@5.9.3)
+      '@scalar/components': 0.16.16(storybook@10.2.3)(typescript@5.9.3)
       '@scalar/helpers': 0.2.6
       '@scalar/icons': 0.5.2(typescript@5.9.3)
       '@scalar/themes': 0.13.26
@@ -3454,7 +3454,7 @@ packages:
       zod: 4.3.5
     dev: false
 
-  /@scalar/use-codemirror@0.13.10(storybook@10.1.11)(typescript@5.9.3):
+  /@scalar/use-codemirror@0.13.10(storybook@10.2.3)(typescript@5.9.3):
     resolution: {integrity: sha512-wtd01kTmUvUoEFIRa/1uTKgnP5OsnQdowWhTKuXs1OlySJ9ulifFVt5us7YtL0wGWmGjfmDTMM6x8WnwlyN/7g==}
     engines: {node: '>=20'}
     dependencies:
@@ -3472,7 +3472,7 @@ packages:
       '@lezer/common': 1.5.0
       '@lezer/highlight': 1.2.3
       '@replit/codemirror-css-color-picker': 6.3.0(@codemirror/language@6.12.1)(@codemirror/state@6.5.3)(@codemirror/view@6.39.7)
-      '@scalar/components': 0.16.16(storybook@10.1.11)(typescript@5.9.3)
+      '@scalar/components': 0.16.16(storybook@10.2.3)(typescript@5.9.3)
       vue: 3.5.26(typescript@5.9.3)
     transitivePeerDependencies:
       - '@vue/composition-api'
@@ -4762,15 +4762,15 @@ packages:
     resolution: {integrity: sha512-7Z6/y3uFI5PRoKeorTOSXKcDj0MSasfNNltcslbFrPpcw6aXRUALq4IfJlaTRspiWIUOEZbrpM+iQGmCOiWe4A==}
     dev: false
 
-  /@vueless/storybook-dark-mode@10.0.4(storybook@10.1.11):
-    resolution: {integrity: sha512-0sNP9i7OkjVx+0JqKipd3rlaulv0bxcZFZ7OQL5+8Z2VXrQQR+jLBclRoLlZCoRA/wnNZA/gjia8dI8aqiF+DA==}
+  /@vueless/storybook-dark-mode@10.0.7(storybook@10.2.3):
+    resolution: {integrity: sha512-mI+tqHykUMlhdwu7PlZ6/wvq1aZqn4DWoUbO4GMhJxLnrDSJn4zKaeEtGXp4KTO5Myv/T6k2iteIe7MSTAZVDQ==}
     engines: {node: '>=20'}
     peerDependencies:
       storybook: ^10.0.0
     dependencies:
       '@storybook/global': 5.0.0
-      lodash-es: 4.17.22
-      storybook: 10.1.11(@testing-library/dom@10.4.1)(react-dom@19.2.1)(react@19.2.1)
+      lodash-es: 4.17.23
+      storybook: 10.2.3(@testing-library/dom@10.4.1)(react-dom@19.2.1)(react@19.2.1)
     dev: false
 
   /@vueuse/core@10.11.1(vue@3.5.26):
@@ -7221,8 +7221,8 @@ packages:
       p-locate: 5.0.0
     dev: true
 
-  /lodash-es@4.17.22:
-    resolution: {integrity: sha512-XEawp1t0gxSi9x01glktRZ5HDy0HXqrM0x5pXQM98EaI0NxO6jVM7omDOxsuEo5UIASAnm2bRp1Jt/e0a2XU8Q==}
+  /lodash-es@4.17.23:
+    resolution: {integrity: sha512-kVI48u3PZr38HdYz98UmfPnXl2DXrpdctLrFLCd3kOx1xUkOmpFPx7gCWWM5MPkL/fD8zb+Ph0QzjGFs4+hHWg==}
     dev: false
 
   /lodash.defaults@4.2.0:
@@ -8790,8 +8790,8 @@ packages:
       internal-slot: 1.1.0
     dev: true
 
-  /storybook@10.1.11(@testing-library/dom@10.4.1)(react-dom@19.2.1)(react@19.2.1):
-    resolution: {integrity: sha512-pKP5jXJYM4OjvNklGuHKO53wOCAwfx79KvZyOWHoi9zXUH5WVMFUe/ZfWyxXG/GTcj0maRgHGUjq/0I43r0dDQ==}
+  /storybook@10.2.3(@testing-library/dom@10.4.1)(react-dom@19.2.1)(react@19.2.1):
+    resolution: {integrity: sha512-kjsJ0hctkTO0ipHiyv1MY39wP4tAyVM7rPQGyVMU1iQ7NYHxthiiCHhFB/szmVjXdJa58fu3ZH5cwENMn8Y5eA==}
     hasBin: true
     peerDependencies:
       prettier: ^2 || ^3
