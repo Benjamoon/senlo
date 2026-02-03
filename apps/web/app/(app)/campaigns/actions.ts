@@ -410,6 +410,7 @@ export async function sendCampaignAction(
         subject: campaign.subject || template.subject,
         html: personalizedHtml,
         providerId: project.providerId!,
+        replyTo: campaign.replyTo || undefined,
       },
     };
   });

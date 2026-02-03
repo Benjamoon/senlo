@@ -11,7 +11,7 @@ export class EmailWorkerProcessor {
   ) {}
 
   async processEmailJob(job: Job<EmailJobData>) {
-    const { campaignId, contactId, email, from, subject, html, providerId } =
+    const { campaignId, contactId, email, from, subject, html, providerId, replyTo } =
       job.data;
 
     try {
@@ -25,6 +25,7 @@ export class EmailWorkerProcessor {
         to: email,
         subject,
         html,
+        replyTo,
       });
 
       if (!result.success) {

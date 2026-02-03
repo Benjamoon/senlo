@@ -131,6 +131,7 @@ export async function POST(req: NextRequest) {
       subject: campaign.subject || template.subject,
       html: personalizedHtml,
       providerId: project.providerId,
+      replyTo: campaign.replyTo || undefined,
     });
 
     const workers = await emailQueue.getWorkers();

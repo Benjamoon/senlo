@@ -12,7 +12,7 @@ export class MailgunMailer implements IMailer {
   constructor(private readonly config: MailgunConfig) {
     // EU region uses api.eu.mailgun.net, US uses api.mailgun.net
     const host =
-      config.region === "EU" ? "api.eu.mailgun.net" : "api.mailgun.net";
+      config.region?.toUpperCase() === "EU" ? "api.eu.mailgun.net" : "api.mailgun.net";
     this.baseUrl = `https://${host}/v3/${config.domain}/messages`;
   }
 
