@@ -11,3 +11,5 @@ export const ALLOW_REGISTRATION =
   process.env.NEXT_PUBLIC_ALLOW_REGISTRATION !== "false";
 
 export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+export const UMAMI_WEBSITE_ID = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
