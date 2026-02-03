@@ -1,35 +1,45 @@
-# Base image
+# 1. Base image for all stages
 FROM node:20-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# 1. Builder stage
+# 2. Dependencies stage
+FROM base AS deps
+WORKDIR /app
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY apps/web/package.json ./apps/web/
+COPY packages/core/package.json ./packages/core/
+COPY packages/db/package.json ./packages/db/
+COPY packages/editor/package.json ./packages/editor/
+COPY packages/ui/package.json ./packages/ui/
+
+# Install all dependencies including devDeps
+RUN pnpm install --frozen-lockfile
+
+# 3. Builder stage
 FROM base AS builder
 WORKDIR /app
-
-# Install build dependencies
-RUN apt-get update && apt-get install -y \
-    python3 \
-    make \
-    g++ \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy all files for installation and build
-# (pnpm workspaces require all package.json files to be present)
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
+COPY --from=deps /app/packages/core/node_modules ./packages/core/node_modules
+COPY --from=deps /app/packages/db/node_modules ./packages/db/node_modules
+COPY --from=deps /app/packages/editor/node_modules ./packages/editor/node_modules
+COPY --from=deps /app/packages/ui/node_modules ./packages/ui/node_modules
 COPY . .
 
 # Set build-time arguments
 ARG NEXT_PUBLIC_APP_URL
 ARG NEXT_PUBLIC_ALLOW_REGISTRATION
+ARG NEXT_PUBLIC_IS_DEMO_MODE
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 ENV NEXT_PUBLIC_ALLOW_REGISTRATION=$NEXT_PUBLIC_ALLOW_REGISTRATION
+ENV NEXT_PUBLIC_IS_DEMO_MODE=$NEXT_PUBLIC_IS_DEMO_MODE
 
-# Install dependencies and build
-RUN CI=true pnpm install
+# Build the application
 RUN pnpm run build
 
-# 2. Production image
+# 4. Production image
 FROM base AS runner
 WORKDIR /app
 
@@ -39,27 +49,35 @@ ENV NODE_ENV=production
 RUN groupadd --system --gid 1001 nodejs && \
     useradd --system --uid 1001 --create-home --home-dir /home/nextjs -g nodejs nextjs
 
-# Set environment variables for corepack and pnpm
-ENV COREPACK_HOME=/home/nextjs/.corepack
-ENV PNPM_HOME=/home/nextjs/.pnpm
-ENV PATH=$PNPM_HOME:$PATH
+# Copy only the necessary files for the web app
+# We copy the entire apps/web/.next, public and only necessary node_modules
+# To be truly tiny, we should use 'output: standalone', but this requires 
+# more changes in next.config.ts. For now, we'll do a cleaner copy.
 
-# Copy necessary files from builder
-COPY --from=builder --chown=nextjs:nodejs /app /app
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next ./apps/web/.next
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/package.json ./apps/web/package.json
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/worker.ts ./apps/web/worker.ts
 
-# Ensure start.sh is in the root and executable
-RUN cp deploy/vps/start.sh ./start.sh && \
-    chmod +x ./start.sh && \
-    mkdir -p apps/web/public/uploads && \
-    chown -R nextjs:nodejs /app
+# Copy built packages
+COPY --from=builder --chown=nextjs:nodejs /app/packages ./packages
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
+COPY --from=builder --chown=nextjs:nodejs /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY --from=builder --chown=nextjs:nodejs /app/pnpm-lock.yaml ./pnpm-lock.yaml
+
+# Copy start script
+COPY --from=builder --chown=nextjs:nodejs /app/deploy/vps/start.sh ./start.sh
+RUN chmod +x ./start.sh
+
+# Install ONLY production dependencies to shrink node_modules
+# This will significantly reduce the final image size
+RUN pnpm install --prod --frozen-lockfile
 
 USER nextjs
 
 EXPOSE 3000
-
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Command to run migrations, provisioning and start the app
 CMD ["./start.sh"]
-
