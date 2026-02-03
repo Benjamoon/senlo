@@ -2,74 +2,45 @@
   <img src="https://github.com/user-attachments/assets/be7f4f59-3180-4a03-b016-b85311a22b19" alt="Senlo logo" width="280" />
 </p>
 
-# Senlo — Open-Source Email Marketing Infrastructure
+# Senlo — Open-Source Email Editor & Infrastructure
 
-**Senlo** is a modern, self-hosted alternative to Mailchimp and Brevo. A powerful open-source email marketing infrastructure that combines a professional visual editor, campaign management, and real-time analytics — all under your own control.
+Senlo is an open-source, self-hosted email editor and infrastructure for product, transactional, and lifecycle emails.
 
----
+It provides a visual builder, template management, contacts, and automation flows, while remaining provider-agnostic for email delivery.  
+You can integrate your own SMTP or ESP and keep full control over your data and workflows.
 
-## Why Senlo?
+## What Senlo Is For
 
-Traditional email platforms are often closed-source, expensive, or tied to a specific provider. Senlo breaks these barriers by offering:
+- Transactional emails (password reset, receipts, verification)
+- Product and lifecycle emails
+- Embedded email editors inside SaaS products
+- Teams that want self-hosted or white-label solutions
 
-- **Full Control**: Host it yourself and own your data.
-- **Modern Editor**: A professional drag-and-drop builder (inspired by tools like BeeFree).
-- **Multi-Tenancy**: Built-in support for multiple users and projects with strict data isolation.
-- **Provider Agnostic**: Use Resend, Mailgun, or any other provider via our flexible integration layer.
-- **Transactional Support**: Send triggered emails (receipts, password resets) via a secure API.
+## Core Capabilities
 
----
+- Visual drag-and-drop email editor
+- Template versioning and structured JSON documents
+- Dynamic variables and preview with mock data
+- Provider-agnostic integrations (SMTP / ESP APIs)
+- Multi-project and multi-user isolation
+- Self-hosted deployment
 
-## Key Features
+Senlo gives you the **engine and UI**.  
+You decide how emails are stored, rendered, and sent.
 
-### 🎨 Visual Email Editor
+## Why Senlo
 
-- **Drag & Drop Builder**: Create professional layouts with Rows, Columns, and Content Blocks.
-- **Rich Content Blocks**: Heading, Paragraph, Button, Image, List, Divider, and Socials.
-- **Live Preview**: See how your email looks on Desktop and Mobile instantly.
-- **Undo/Redo & History**: Full control over your design process.
-- **Image Management**: Direct file uploads to your own server.
+Most email platforms combine editing, sending, analytics, and marketing tools into a single closed ecosystem.  
+Senlo separates concerns and provides an open infrastructure layer that you can integrate into your own stack.
 
-### 📧 Campaign Management
+This makes it suitable for:
 
-- **One-off Campaigns**: Send newsletters to your recipient lists.
-- **Triggered Emails (API)**: Power your transactional emails with a secure `/api/triggered` endpoint.
-- **Personalization**: Use `{{dynamic_tags}}` and custom JSON variables in your designs.
-- **Audience Isolation**: Manage contacts and lists per project.
+- SaaS products that need built-in email editing
+- Agencies requiring white-label solutions
+- Teams that want to avoid vendor lock-in
+- Developer-first workflows
 
-### 📊 Real-time Tracking & Analytics
-
-- **Open Tracking**: Real-time logging of email opens with IP and User-Agent metadata.
-- **Click Tracking**: Track every interaction with proxied link redirection.
-- **Campaign Results**: Detailed tables of events (SENT, DELIVERED, OPEN, CLICK, etc.).
-
-### 🔒 Security & Multi-tenancy
-
-- **User Authentication**: Secure login/registration powered by Auth.js (NextAuth v5).
-- **Private Mode**: Disable public sign-ups for private self-hosted instances.
-- **Data Ownership**: Users only see their own projects, templates, and contacts.
-
----
-
-## Technology Stack
-
-- **Frontend**: Next.js 16 (App Router), React 19, Tailwind CSS.
-- **State Management**: Zustand (Immer for state immutability).
-- **Backend**: Next.js Server Actions & API Routes.
-- **Database**: PostgreSQL with Drizzle ORM.
-- **Communication**: Auth.js, Zod (Validation), Resend/Mailgun (Sending).
-- **Package Management**: pnpm workspaces (Monorepo).
-
----
-
-## Author
-
-**Igor Filippov**
-- GitHub: [@IgorFilippov3](https://github.com/IgorFilippov3)
-
----
-
-## Architecture Overview
+## Architecture
 
 ```text
 apps/
@@ -82,7 +53,20 @@ packages/
   db/                   # Database schema, migrations, and repositories
 ```
 
----
+## Technology Stack
+
+- **Frontend**: Next.js 16 (App Router), React 19, Tailwind CSS.
+- **State Management**: Zustand (Immer for state immutability).
+- **Backend**: Next.js Server Actions & API Routes.
+- **Database**: PostgreSQL with Drizzle ORM.
+- **Communication**: Auth.js, Zod (Validation), Resend/Mailgun (Sending).
+- **Package Management**: pnpm workspaces (Monorepo).
+
+## Author
+
+**Igor Filippov**
+
+- GitHub: [@IgorFilippov3](https://github.com/IgorFilippov3)
 
 ## Quick Start
 
@@ -106,8 +90,6 @@ packages/
 ### Production Deployment (Self-hosted)
 
 The easiest way to deploy Senlo is using Docker Compose. Check our [VPS Deployment Guide](./deploy/vps/README.md) for step-by-step instructions.
-
----
 
 ## Status
 
