@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
 
     const job = await emailQueue.add(`triggered-${campaign.id}-${to}-${Date.now()}`, {
       campaignId: campaign.id,
-      contactId: 0,
+      contactId: null,
       email: to,
       from: fromAddress,
       subject: campaign.subject || template.subject,

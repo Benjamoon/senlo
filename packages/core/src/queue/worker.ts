@@ -35,7 +35,7 @@ export class EmailWorkerProcessor {
       if (campaignId !== 0) {
         await this.campaignRepo.logEvent({
           campaignId,
-          contactId,
+          contactId: contactId && contactId !== 0 ? contactId : null,
           email,
           type: "SENT",
           metadata: { provider: provider.type, messageId: result.messageId },
@@ -43,7 +43,7 @@ export class EmailWorkerProcessor {
 
         await this.campaignRepo.logEvent({
           campaignId,
-          contactId,
+          contactId: contactId && contactId !== 0 ? contactId : null,
           email,
           type: "DELIVERED",
           metadata: { deliveryTime: "0.1s" },
@@ -55,7 +55,7 @@ export class EmailWorkerProcessor {
       if (campaignId !== 0) {
         await this.campaignRepo.logEvent({
           campaignId,
-          contactId,
+          contactId: contactId && contactId !== 0 ? contactId : null,
           email,
           type: "FAILED",
           metadata: {
