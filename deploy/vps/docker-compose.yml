@@ -6,6 +6,8 @@ services:
       args:
         - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
         - NEXT_PUBLIC_ALLOW_REGISTRATION=${ALLOW_REGISTRATION:-true}
+        - NEXT_PUBLIC_IS_DEMO_MODE=${NEXT_PUBLIC_IS_DEMO_MODE:-false}
+        - NEXT_PUBLIC_UMAMI_WEBSITE_ID=${NEXT_PUBLIC_UMAMI_WEBSITE_ID:-}
     container_name: senlo-app
     restart: always
     ports:
@@ -19,6 +21,9 @@ services:
       - ALLOW_REGISTRATION=${ALLOW_REGISTRATION:-true}
       - NEXT_PUBLIC_ALLOW_REGISTRATION=${ALLOW_REGISTRATION:-true}
       - INITIAL_USERS=${INITIAL_USERS}
+      - IS_DEMO_MODE=${IS_DEMO_MODE:-false}
+      - NEXT_PUBLIC_IS_DEMO_MODE=${NEXT_PUBLIC_IS_DEMO_MODE:-false}
+      - NEXT_PUBLIC_UMAMI_WEBSITE_ID=${NEXT_PUBLIC_UMAMI_WEBSITE_ID:-}
     volumes:
       - uploads_data:/app/apps/web/public/uploads
     depends_on:
