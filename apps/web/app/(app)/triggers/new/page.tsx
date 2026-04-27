@@ -1,5 +1,5 @@
 import { getWizardData } from "../actions";
-import { CampaignWizard } from "./campaign-wizard";
+import { TriggerWizard } from "./trigger-wizard";
 
 export const dynamic = "force-dynamic";
 
@@ -18,10 +18,10 @@ export default async function NewCampaignPage() {
 
           <div className="space-y-2">
             <h1 className="text-2xl font-bold text-gray-900">
-              Failed to load wizard data
+              Failed to load wizard
             </h1>
             <p className="text-gray-600">
-              We could not load the data needed to create a campaign. Please try
+              We could not load the data needed to create a transactional email. Please try
               again.
             </p>
           </div>
@@ -30,5 +30,5 @@ export default async function NewCampaignPage() {
     );
   }
 
-  return <CampaignWizard projects={result.data.projects} />;
+  return <TriggerWizard projects={result.data.projects} />;
 }

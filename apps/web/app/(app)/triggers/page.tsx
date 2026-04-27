@@ -1,25 +1,25 @@
 import { PageHeader, Button } from "@senlo/ui";
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import { CampaignsList } from "apps/web/components/campaigns-list";
+import { TriggersList } from "apps/web/components/campaigns-list";
 
-export default function CampaignsPage() {
+export default function TriggersPage() {
   return (
     <main className="max-w-6xl mx-auto py-10 px-8">
       <PageHeader
-        title="Campaigns"
-        description="Monitor and manage all your email campaigns in one place."
+        title="Transactional Emails"
+        description="Monitor and manage all your transactional emails in one place."
         actions={
-          <Link href="/campaigns/new">
+          <Link href="/triggers/new">
             <Button>
               <Plus size={16} />
-              New Campaign
+              New Transactional
             </Button>
           </Link>
         }
       />
 
-      <CampaignsList showFilters={true} />
+      <TriggersList showFilters={true} />
     </main>
   );
 }

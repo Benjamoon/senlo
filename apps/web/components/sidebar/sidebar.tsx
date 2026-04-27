@@ -5,8 +5,7 @@ import Link from "next/link";
 import { usePathname, useParams } from "next/navigation";
 import {
   Folder,
-  Send,
-  Users,
+  Zap,
   Settings,
   ChevronDown,
   Globe,
@@ -142,16 +141,10 @@ export function Sidebar() {
               isActive={pathname === `/projects/${projectId}`}
             />
             <NavItem
-              href={`/projects/${projectId}/campaigns`}
-              label="Campaigns"
-              icon={Send}
-              isActive={pathname.startsWith(`/projects/${projectId}/campaigns`)}
-            />
-            <NavItem
-              href={`/audience?projectId=${projectId}`}
-              label="Audience"
-              icon={Users}
-              isActive={pathname.startsWith("/audience")}
+              href={`/projects/${projectId}/triggers`}
+              label="Transactional"
+              icon={Zap}
+              isActive={pathname.startsWith(`/projects/${projectId}/triggers`)}
             />
 
             <div className="mt-6">
@@ -179,16 +172,10 @@ export function Sidebar() {
               isActive={pathname.startsWith("/projects")}
             />
             <NavItem
-              href="/campaigns"
-              label="Campaigns"
-              icon={Send}
-              isActive={pathname.startsWith("/campaigns")}
-            />
-            <NavItem
-              href="/audience"
-              label="Audience"
-              icon={Users}
-              isActive={pathname.startsWith("/audience")}
+              href="/triggers"
+              label="Transactional"
+              icon={Zap}
+              isActive={pathname.startsWith("/triggers")}
             />
             <NavItem
               href="/providers"

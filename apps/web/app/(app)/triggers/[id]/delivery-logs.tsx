@@ -16,7 +16,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-interface CampaignTimelineProps {
+interface DeliveryLogsProps {
   events: CampaignEvent[];
 }
 
@@ -30,7 +30,7 @@ const eventIcons: Record<string, React.ReactNode> = {
   UNSUBSCRIBE: <UserMinus size={16} className="text-zinc-400" />,
 };
 
-export function CampaignTimeline({ events }: CampaignTimelineProps) {
+export function DeliveryLogs({ events }: DeliveryLogsProps) {
   const eventTypes: CampaignEventType[] = Array.from(
     new Set(events.map((e) => e.type))
   ).sort();
@@ -55,7 +55,7 @@ export function CampaignTimeline({ events }: CampaignTimelineProps) {
       <div className="py-12 text-center bg-zinc-50 rounded-xl border border-dashed border-zinc-200">
         <Clock size={32} className="mx-auto text-zinc-300 mb-2" />
         <p className="text-sm text-zinc-500">
-          No events recorded yet. Send your campaign to see activity.
+          No delivery logs recorded yet. Trigger this email to see activity.
         </p>
       </div>
     );

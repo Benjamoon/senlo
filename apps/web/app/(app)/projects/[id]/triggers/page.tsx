@@ -4,7 +4,7 @@ import { PageHeader, EmptyState, Button } from "@senlo/ui";
 import { Send, Plus, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { CampaignCard } from "apps/web/app/(app)/campaigns/campaign-card";
+import { TriggerCard } from "apps/web/app/(app)/triggers/trigger-card";
 import { useProject } from "apps/web/queries/projects";
 import { useProjectCampaigns } from "apps/web/queries/campaigns";
 
@@ -67,13 +67,13 @@ export default function ProjectCampaignsPage() {
       </div>
 
       <PageHeader
-        title={`Campaigns: ${project.name}`}
-        description="Manage email campaigns specific to this project."
+        title={`Transactional: ${project.name}`}
+        description="Manage transactional emails specific to this project."
         actions={
-          <Link href="/campaigns/new">
+          <Link href="/triggers/new">
             <Button>
               <Plus size={16} />
-              New Campaign
+              New Transactional
             </Button>
           </Link>
         }
@@ -82,12 +82,12 @@ export default function ProjectCampaignsPage() {
       {campaigns.length === 0 ? (
         <EmptyState
           icon={<Send size={40} />}
-          title="No campaigns in this project"
+          title="No transactional emails in this project"
           action={
-            <Link href="/campaigns/new">
+            <Link href="/triggers/new">
               <Button>
                 <Plus size={16} />
-                New Campaign
+                New Transactional
               </Button>
             </Link>
           }
@@ -95,7 +95,7 @@ export default function ProjectCampaignsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {campaigns.map((campaign) => (
-            <CampaignCard key={campaign.id} campaign={campaign} />
+            <TriggerCard key={campaign.id} campaign={campaign} />
           ))}
         </div>
       )}

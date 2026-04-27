@@ -2,6 +2,5 @@
 export * from "./projects";
 export * from "./templates";
 export * from "./campaigns";
-export * from "./audience";
 export * from "./providers";
 export * from "./api-keys";

@@ -4,7 +4,7 @@ import {
   listAllCampaigns,
   listProjectCampaigns,
   deleteCampaignAction,
-} from "../app/(app)/campaigns/actions";
+} from "../app/(app)/triggers/actions";
 import { queryKeys } from "../providers";
 import { logger } from "../lib/logger";
 

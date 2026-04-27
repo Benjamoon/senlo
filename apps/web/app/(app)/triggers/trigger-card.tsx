@@ -24,11 +24,11 @@ const statusColors: Record<
   ARCHIVED: "secondary",
 };
 
-export const CampaignCard = memo(function CampaignCard({
+export const TriggerCard = memo(function TriggerCard({
   campaign,
 }: CampaignCardProps) {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const { mutate: deleteCampaign, isPending: isDeleting } = useDeleteCampaign();
+  const { mutate: deleteTrigger, isPending: isDeleting } = useDeleteCampaign();
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -37,16 +37,16 @@ export const CampaignCard = memo(function CampaignCard({
   };
 
   const confirmDelete = async () => {
-    deleteCampaign(campaign.id, {
+    deleteTrigger(campaign.id, {
       onSuccess: () => {
         setIsDeleteOpen(false);
       },
       onError: (error) => {
-        logger.error("Failed to delete campaign from card", {
+        logger.error("Failed to delete trigger from card", {
           campaignId: campaign.id,
           error: error instanceof Error ? error.message : String(error),
         });
-        alert("Failed to delete campaign. Please try again.");
+        alert("Failed to delete trigger. Please try again.");
       }
     });
   };
@@ -55,7 +55,7 @@ export const CampaignCard = memo(function CampaignCard({
 
   return (
     <>
-      <Link href={`/campaigns/${campaign.id}`} className="group relative">
+      <Link href={`/triggers/${campaign.id}`} className="group relative">
         <Card className="h-full p-5 transition-shadow hover:shadow-md border-zinc-200 group-hover:border-zinc-300">
           <div className="flex flex-col h-full gap-4">
             <div className="flex items-start justify-between">
@@ -87,7 +87,7 @@ export const CampaignCard = memo(function CampaignCard({
                 <button
                   onClick={handleDelete}
                   className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                  title="Delete campaign"
+                  title="Delete trigger"
                 >
                   <Trash2 size={16} />
                 </button>
@@ -147,7 +147,7 @@ export const CampaignCard = memo(function CampaignCard({
       <Dialog
         isOpen={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}
-        title="Delete Campaign"
+        title="Delete Trigger"
         description={`Are you sure you want to delete "${campaign.name}"? All associated analytics data will be permanently removed. This action cannot be undone.`}
         footer={
           <div className="flex justify-end gap-3">
@@ -163,13 +163,13 @@ export const CampaignCard = memo(function CampaignCard({
               onClick={confirmDelete}
               disabled={isDeleting}
             >
-              {isDeleting ? "Deleting..." : "Delete Campaign"}
+              {isDeleting ? "Deleting..." : "Delete Trigger"}
             </Button>
           </div>
         }
       >
         <p className="text-sm text-zinc-500">
-          This will permanently remove the campaign and all its history.
+          This will permanently remove the trigger and all its history.
         </p>
       </Dialog>
     </>

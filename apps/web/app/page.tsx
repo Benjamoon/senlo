@@ -42,16 +42,10 @@ export default function HomePage() {
                 Projects
               </Link>
               <Link
-                href="/campaigns"
+                href="/triggers"
                 className="hover:text-zinc-900 transition-colors"
               >
-                Campaigns
-              </Link>
-              <Link
-                href="/audience"
-                className="hover:text-zinc-900 transition-colors"
-              >
-                Audience
+                Transactional
               </Link>
               <Link
                 href="https://github.com/IgorFilippov3/senlo"
@@ -101,7 +95,7 @@ export default function HomePage() {
 
             <p className="text-lg md:text-xl text-zinc-500 mb-12 max-w-3xl mx-auto leading-relaxed">
               Take total control of your email stack. A powerful platform that
-              combines a professional visual editor, campaign management, and
+              combines a professional visual editor, transactional email management, and
               full data ownership.
             </p>
 
@@ -217,12 +211,10 @@ export default function HomePage() {
                 <Send className="w-6 h-6 text-blue-600" />
               </div>
               <h3 className="text-xl font-bold text-zinc-900 mb-4">
-                Email Campaigns
+                Transactional Logs
               </h3>
               <p className="text-zinc-500 leading-relaxed">
-                Create segments, manage recipient lists, and schedule bulk
-                broadcasts. Keep your audience engaged with personalized
-                announcements.
+                Track every triggered email in real-time. Full visibility into delivery status, errors, and performance metrics.
               </p>
             </Card>
 
@@ -334,13 +326,8 @@ export default function HomePage() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/campaigns" className="hover:text-zinc-900">
-                    Campaigns
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/audience" className="hover:text-zinc-900">
-                    Audience
+                  <Link href="/triggers" className="hover:text-zinc-900">
+                    Transactional
                   </Link>
                 </li>
                 <li>

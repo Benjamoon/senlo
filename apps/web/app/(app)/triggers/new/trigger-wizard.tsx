@@ -10,10 +10,10 @@ import {
   JsonEditor,
   PageHeader,
 } from "@senlo/ui";
-import { Project, RecipientList } from "@senlo/core";
+import { Project } from "@senlo/core";
 import { useRouter } from "next/navigation";
 import { useTemplates } from "apps/web/hooks/use-templates";
-import { getListsByProject, createCampaignAction } from "../actions";
+import { createCampaignAction } from "../actions";
 import { logger } from "apps/web/lib/logger";
 import {
   ChevronRight,
@@ -33,7 +33,7 @@ interface CampaignWizardProps {
 
 type Step = "setup" | "content" | "audience" | "review";
 
-export function CampaignWizard({ projects }: CampaignWizardProps) {
+export function TriggerWizard({ projects }: TriggerWizardProps) {
   const router = useRouter();
   const [step, setStep] = useState<Step>("setup");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,11 +43,10 @@ export function CampaignWizard({ projects }: CampaignWizardProps) {
     description: "",
     projectId: "",
     templateId: "",
-    listId: "",
     fromName: "",
     fromEmail: "",
     subject: "",
-    type: "STANDARD" as "STANDARD" | "TRIGGERED",
+    type: "TRIGGERED" as "TRIGGERED",
     variablesSchema: "",
   });
 
@@ -56,21 +55,6 @@ export function CampaignWizard({ projects }: CampaignWizardProps) {
     filters: { projectId: projectId! },
     enabled: !!projectId,
   });
-  const [lists, setLists] = useState<RecipientList[]>([]);
-  const [isLoadingLists, setIsLoadingLists] = useState(false);
-
-  useEffect(() => {
-    if (formData.projectId) {
-      const pid = Number(formData.projectId);
-
-      setIsLoadingLists(true);
-      getListsByProject(pid)
-        .then(setLists)
-        .finally(() => setIsLoadingLists(false));
-    } else {
-      setLists([]);
-    }
-  }, [formData.projectId]);
 
   const updateField = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -78,19 +62,12 @@ export function CampaignWizard({ projects }: CampaignWizardProps) {
 
   const handleNext = () => {
     if (step === "setup") setStep("content");
-    else if (step === "content") {
-      if (formData.type === "TRIGGERED") setStep("review");
-      else setStep("audience");
-    } else if (step === "audience") setStep("review");
+    else if (step === "content") setStep("review");
   };
 
   const handleBack = () => {
     if (step === "content") setStep("setup");
-    else if (step === "audience") setStep("content");
-    else if (step === "review") {
-      if (formData.type === "TRIGGERED") setStep("content");
-      else setStep("audience");
-    }
+    else if (step === "review") setStep("content");
   };
 
   const handleSubmit = async () => {
@@ -103,7 +80,7 @@ export function CampaignWizard({ projects }: CampaignWizardProps) {
 
       const result = await createCampaignAction(data);
       if ("success" in result && result.success) {
-        router.push(`/campaigns/${result.data.id}`);
+        router.push(`/triggers/${result.data.id}`);
       } else if ("error" in result && result.error) {
         const fieldErrors = result.error.fieldErrors;
         let errorMessage = "Validation failed";
@@ -140,17 +117,11 @@ export function CampaignWizard({ projects }: CampaignWizardProps) {
     }
   };
 
-  const allSteps = [
+  const steps = [
     { id: "setup", label: "Setup", icon: <Settings size={18} /> },
     { id: "content", label: "Content", icon: <Layout size={18} /> },
-    { id: "audience", label: "Audience", icon: <Users size={18} /> },
     { id: "review", label: "Review", icon: <Send size={18} /> },
   ];
-
-  const steps = allSteps.filter((s) => {
-    if (formData.type === "TRIGGERED" && s.id === "audience") return false;
-    return true;
-  });
 
   const currentProject = projects.find(
     (p) => p.id === Number(formData.projectId)
@@ -158,13 +129,12 @@ export function CampaignWizard({ projects }: CampaignWizardProps) {
   const currentTemplate = templates.find(
     (t) => t.id === Number(formData.templateId)
   );
-  const currentList = lists.find((l) => l.id === Number(formData.listId));
 
   return (
     <div className="max-w-4xl mx-auto py-10 px-8">
       <PageHeader
-        title="Create New Campaign"
-        description="Follow the steps to configure and send your email campaign."
+        title="Create New Email"
+        description="Configure your transactional email trigger."
       />
 
       <div className="flex items-center justify-between mb-10 relative">
@@ -204,80 +174,16 @@ export function CampaignWizard({ projects }: CampaignWizardProps) {
       <Card className="p-8">
         {step === "setup" && (
           <div className="space-y-8">
-            <FormField
-              label="Campaign Type"
-              required
-              hint="How will this campaign be sent?"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div
-                  onClick={() =>
-                    setFormData((prev) => ({ ...prev, type: "STANDARD" }))
-                  }
-                  className={`p-4 border rounded-xl cursor-pointer transition-all ${
-                    formData.type === "STANDARD"
-                      ? "border-blue-600 bg-blue-50 shadow-sm"
-                      : "border-zinc-200 hover:border-zinc-300 bg-white"
-                  }`}
-                >
-                  <div className="flex items-center gap-3 mb-2">
-                    <div
-                      className={`p-2 rounded-lg ${
-                        formData.type === "STANDARD"
-                          ? "bg-blue-600 text-white"
-                          : "bg-zinc-100 text-zinc-500"
-                      }`}
-                    >
-                      <Send size={18} />
-                    </div>
-                    <h4 className="font-semibold text-sm">Standard Campaign</h4>
-                  </div>
-                  <p className="text-xs text-zinc-500 leading-relaxed">
-                    One-time broadcast to a list of recipients. Best for
-                    newsletters and announcements.
-                  </p>
-                </div>
-
-                <div
-                  onClick={() =>
-                    setFormData((prev) => ({ ...prev, type: "TRIGGERED" }))
-                  }
-                  className={`p-4 border rounded-xl cursor-pointer transition-all ${
-                    formData.type === "TRIGGERED"
-                      ? "border-blue-600 bg-blue-50 shadow-sm"
-                      : "border-zinc-200 hover:border-zinc-300 bg-white"
-                  }`}
-                >
-                  <div className="flex items-center gap-3 mb-2">
-                    <div
-                      className={`p-2 rounded-lg ${
-                        formData.type === "TRIGGERED"
-                          ? "bg-blue-600 text-white"
-                          : "bg-zinc-100 text-zinc-500"
-                      }`}
-                    >
-                      <Zap size={18} />
-                    </div>
-                    <h4 className="font-semibold text-sm">Triggered (API)</h4>
-                  </div>
-                  <p className="text-xs text-zinc-500 leading-relaxed">
-                    Sent automatically via API webhook when an event occurs.
-                    Best for transactional emails.
-                  </p>
-                </div>
-              </div>
-            </FormField>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
-                label="Campaign Name"
+                label="Trigger Name"
                 required
-                hint="Internal name for your campaign"
+                hint="Internal name for your email trigger"
               >
                 <Input
                   value={formData.name}
                   onChange={(e) => updateField("name", e.target.value)}
-                  placeholder="e.g. Winter Sale 2024"
+                  placeholder="e.g. Welcome Email"
                 />
               </FormField>
               <FormField
@@ -300,24 +206,22 @@ export function CampaignWizard({ projects }: CampaignWizardProps) {
               </FormField>
             </div>
 
-            {formData.type === "TRIGGERED" && (
-              <FormField
-                label="Sample JSON Data"
-                hint="Provide a sample JSON object to define variables for the editor"
-              >
-                <JsonEditor
-                  value={formData.variablesSchema}
-                  onChange={(val) => updateField("variablesSchema", val)}
-                  height="160px"
-                />
-              </FormField>
-            )}
+            <FormField
+              label="Sample JSON Data"
+              hint="Provide a sample JSON object to define variables for the editor"
+            >
+              <JsonEditor
+                value={formData.variablesSchema}
+                onChange={(val) => updateField("variablesSchema", val)}
+                height="160px"
+              />
+            </FormField>
 
             <FormField label="Description (optional)">
               <Textarea
                 value={formData.description}
                 onChange={(e) => updateField("description", e.target.value)}
-                placeholder="Describe the goals of this campaign..."
+                placeholder="e.g. Sent when a new user signs up..."
                 rows={3}
               />
             </FormField>
@@ -471,22 +375,6 @@ export function CampaignWizard({ projects }: CampaignWizardProps) {
                 </h4>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-zinc-500">Type:</span>
-                    <span className="font-medium flex items-center gap-1.5">
-                      {formData.type === "TRIGGERED" ? (
-                        <>
-                          <Zap size={14} className="text-blue-600" />
-                          Triggered (API)
-                        </>
-                      ) : (
-                        <>
-                          <Send size={14} className="text-blue-600" />
-                          Standard
-                        </>
-                      )}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
                     <span className="text-zinc-500">Name:</span>
                     <span className="font-medium">{formData.name}</span>
                   </div>
@@ -518,21 +406,6 @@ export function CampaignWizard({ projects }: CampaignWizardProps) {
                   </div>
                 </div>
               </div>
-              {formData.type === "STANDARD" && (
-                <div className="space-y-4">
-                  <h4 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
-                    Audience
-                  </h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-zinc-500">List:</span>
-                      <span className="font-medium">
-                        {currentList?.name || "None selected"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
             <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 flex items-start gap-3">
@@ -540,19 +413,9 @@ export function CampaignWizard({ projects }: CampaignWizardProps) {
                 <Settings size={18} />
               </div>
               <p className="text-sm text-blue-800">
-                {formData.type === "TRIGGERED" ? (
-                  <>
-                    Ready to go! Once you create this triggered campaign, you
-                    will receive a <strong>Webhook URL</strong>
-                    to start sending emails from your backend.
-                  </>
-                ) : (
-                  <>
-                    Ready to go! Once you create this campaign, it will be saved
-                    as a <strong>Draft</strong>. You can review the design and
-                    send it from the campaign dashboard.
-                  </>
-                )}
+                Ready to go! Once you create this transactional email, you
+                will receive a <strong>Webhook URL</strong>
+                to start sending from your backend.
               </p>
             </div>
           </div>
@@ -570,7 +433,7 @@ export function CampaignWizard({ projects }: CampaignWizardProps) {
 
           {step === "review" ? (
             <Button onClick={handleSubmit} disabled={isSubmitting}>
-              {isSubmitting ? "Creating..." : "Create Campaign"}
+              {isSubmitting ? "Creating..." : "Create Email"}
               <Check size={16} />
             </Button>
           ) : (
@@ -579,8 +442,7 @@ export function CampaignWizard({ projects }: CampaignWizardProps) {
               disabled={
                 (step === "setup" && (!formData.name || !formData.projectId)) ||
                 (step === "content" &&
-                  (!formData.subject || !formData.templateId)) ||
-                (step === "audience" && !formData.listId)
+                  (!formData.subject || !formData.templateId))
               }
             >
               Next Step

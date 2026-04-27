@@ -19,17 +19,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Senlo — Open-Source Email Marketing Infrastructure",
+  title: "Senlo — Open-Source Transactional Email Infrastructure",
   description:
-    "A modern, self-hosted alternative to Mailchimp and Brevo. Open-source email marketing infrastructure for building, managing, and sending campaigns.",
+    "A modern, self-hosted alternative to Postmark and Resend. Open-source transactional email infrastructure with a visual MJML editor.",
   keywords: [
-    "email marketing infrastructure",
+    "transactional email infrastructure",
     "email builder",
     "email templates",
-    "brevo alternative",
-    "mailchimp alternative",
+    "postmark alternative",
+    "resend alternative",
     "open source",
     "self-hosted",
+    "mjml editor",
   ],
   authors: [{ name: "Igor Filippov" }],
   creator: "Igor Filippov",
@@ -49,24 +50,24 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "/",
-    title: "Senlo — Open-Source Email Marketing Infrastructure",
+    title: "Senlo — Open-Source Transactional Email Infrastructure",
     description:
-      "A modern, self-hosted alternative to Mailchimp and Brevo. Open-source email marketing infrastructure for building, managing, and sending campaigns.",
+      "A modern, self-hosted alternative to Postmark and Resend. Open-source transactional email infrastructure with a visual MJML editor.",
     siteName: "Senlo",
     images: [
       {
         url: "/logo-preview.png",
         width: 1200,
         height: 630,
-        alt: "Senlo — Email Marketing Infrastructure",
+        alt: "Senlo — Transactional Email Infrastructure",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Senlo — Open-Source Email Marketing Infrastructure",
+    title: "Senlo — Open-Source Transactional Email Infrastructure",
     description:
-      "A modern, self-hosted alternative to Mailchimp and Brevo. Open-source email marketing infrastructure for building, managing, and sending campaigns.",
+      "A modern, self-hosted alternative to Postmark and Resend. Open-source transactional email infrastructure with a visual MJML editor.",
     images: ["/logo-preview.png"],
   },
   robots: {

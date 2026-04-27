@@ -3,12 +3,12 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-interface CampaignPollingProps {
+interface TriggerPollingProps {
   campaignId: number;
   status: string;
 }
 
-export function CampaignPolling({ campaignId, status }: CampaignPollingProps) {
+export function TriggerPolling({ campaignId, status }: TriggerPollingProps) {
   const router = useRouter();
 
   useEffect(() => {

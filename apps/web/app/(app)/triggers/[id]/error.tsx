@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { ErrorBoundary } from "apps/web/components/error-boundary";
 
-export default function AudienceError({
+export default function CampaignError({
+  error,
   reset,
 }: {
   error: Error & { digest?: string };
@@ -22,10 +23,11 @@ export default function AudienceError({
 
             <div className="space-y-2">
               <h1 className="text-2xl font-bold text-gray-900">
-                Failed to load audience
+                Failed to load email
               </h1>
               <p className="text-gray-600">
-                We could not load your contacts and lists. Please try again.
+                We could not load this transactional email. It may have been deleted or you
+                may not have access.
               </p>
             </div>
 
@@ -37,10 +39,10 @@ export default function AudienceError({
                 Try Again
               </button>
               <Link
-                href="/projects"
+                href="/triggers"
                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
               >
-                Back to Projects
+                Back to Transactional
               </Link>
             </div>
           </div>

@@ -18,25 +18,28 @@ import {
   FileText,
   ArrowRight,
   Settings2,
+  Pencil,
   Save,
   X,
+  FolderOpen,
+  LayoutTemplate,
 } from "lucide-react";
 import Link from "next/link";
 import { Campaign, Project, EmailTemplate } from "@senlo/core";
 import { updateCampaignAction } from "../actions";
 import { logger } from "apps/web/lib/logger";
 
-interface CampaignInfoCardProps {
+interface TriggerConfigurationCardProps {
   campaign: Campaign;
   project: Project;
   template: EmailTemplate;
 }
 
-export function CampaignInfoCard({
+export function TriggerConfigurationCard({
   campaign,
   project,
   template,
-}: CampaignInfoCardProps) {
+}: TriggerConfigurationCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -92,8 +95,8 @@ export function CampaignInfoCard({
       <Card className="p-6 space-y-6">
         <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
           <h3 className="font-semibold flex items-center gap-2">
-            <Info size={20} strokeWidth={2.5} className="text-zinc-400" />
-            Campaign Info
+            <Settings2 size={20} strokeWidth={2.5} className="text-zinc-400" />
+            Configuration
           </h3>
           <Button
             variant="ghost"
@@ -101,60 +104,74 @@ export function CampaignInfoCard({
             className="h-10 w-10 p-0 text-zinc-400 hover:text-blue-600"
             onClick={() => setIsEditing(true)}
           >
-            <Settings2 size={20} />
+            <Pencil size={18} />
           </Button>
         </div>
 
-        <div className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase text-zinc-400">
+        <div className="space-y-7">
+          {/* Project Section */}
+          <div className="space-y-3">
+            <h4 className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
               Project
-            </label>
-            <div className="flex items-center gap-2 text-sm">
-              <Badge variant="outline" className="font-normal">
-                {project.name}
-              </Badge>
+            </h4>
+            <div className="flex items-center gap-3 px-3 py-2.5 bg-zinc-50/50 border border-zinc-100 rounded-xl group hover:border-zinc-200 transition-colors">
+              <div className="w-8 h-8 rounded-lg bg-white border border-zinc-100 flex items-center justify-center text-zinc-400 group-hover:text-blue-600 transition-colors">
+                <FolderOpen size={16} />
+              </div>
+              <span className="text-sm font-medium text-zinc-700">{project.name}</span>
             </div>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase text-zinc-400">
-              Sender
-            </label>
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2 text-sm text-zinc-600">
-                <User size={14} />
-                {campaign.fromName || "Default Sender"}
-              </div>
-              <div className="flex items-center gap-2 text-sm text-zinc-600">
-                <Mail size={14} />
-                {campaign.fromEmail || "hello@senlo.io"}
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase text-zinc-400">
-              Content
-            </label>
+          {/* Sender Section */}
+          <div className="space-y-3">
+            <h4 className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+              Sender details
+            </h4>
             <div className="space-y-2">
-              <div className="p-3 bg-zinc-50 rounded-lg border border-zinc-100">
-                <div className="text-xs text-zinc-400 mb-1">Subject</div>
-                <div className="text-sm font-medium text-zinc-900">
+              <div className="flex items-center gap-3 px-3">
+                <div className="w-5 h-5 flex items-center justify-center text-zinc-400">
+                  <User size={14} />
+                </div>
+                <span className="text-sm text-zinc-600">{campaign.fromName || "Default Sender"}</span>
+              </div>
+              <div className="flex items-center gap-3 px-3">
+                <div className="w-5 h-5 flex items-center justify-center text-zinc-400">
+                  <Mail size={14} />
+                </div>
+                <span className="text-sm text-zinc-600 font-mono">{campaign.fromEmail || "hello@senlo.io"}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Content Section */}
+          <div className="space-y-3">
+            <h4 className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+              Content & Template
+            </h4>
+            <div className="space-y-3">
+              <div className="px-4 py-3 bg-blue-50/30 border border-blue-100/50 rounded-xl">
+                <div className="text-[10px] font-bold uppercase text-blue-600/60 mb-1.5 tracking-tight">Email Subject</div>
+                <div className="text-sm font-medium text-zinc-900 leading-snug">
                   {campaign.subject || template.subject}
                 </div>
               </div>
+
               <Link
                 href={`/editor/${template.id}?campaignId=${campaign.id}`}
-                className="flex items-center justify-between p-3 border border-zinc-100 rounded-lg hover:bg-zinc-50 transition-colors group"
+                className="flex items-center justify-between p-4 border border-zinc-200 bg-white rounded-xl hover:border-blue-300 hover:shadow-sm transition-all group"
               >
-                <div className="flex items-center gap-2">
-                  <FileText size={16} className="text-blue-600" />
-                  <span className="text-sm font-medium">{template.name}</span>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center text-zinc-400 group-hover:bg-blue-50 group-hover:border-blue-100 group-hover:text-blue-600 transition-all">
+                    <LayoutTemplate size={20} />
+                  </div>
+                  <div>
+                    <div className="text-xs text-zinc-400 mb-0.5">Active Template</div>
+                    <div className="text-sm font-semibold text-zinc-900">{template.name}</div>
+                  </div>
                 </div>
                 <ArrowRight
-                  size={14}
-                  className="text-zinc-300 group-hover:text-zinc-900 transition-colors"
+                  size={16}
+                  className="text-zinc-300 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all"
                 />
               </Link>
             </div>
@@ -165,7 +182,7 @@ export function CampaignInfoCard({
       <Dialog
         isOpen={isEditing}
         onClose={() => setIsEditing(false)}
-        title="Edit Campaign Settings"
+        title="Edit Configuration"
         className="max-w-2xl"
         footer={
           <div className="flex justify-end gap-3">
@@ -185,7 +202,7 @@ export function CampaignInfoCard({
         }
       >
         <div className="space-y-5 py-2">
-          <FormField label="Campaign Name" required>
+          <FormField label="Internal Name" required>
             <Input
               value={formData.name}
               onChange={(e) =>

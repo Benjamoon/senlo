@@ -13,11 +13,11 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { CampaignTimeline } from "./campaign-timeline";
+import { DeliveryLogs } from "./delivery-logs";
 import { SendCampaignButton } from "./send-button";
 import { WebhookInfo } from "./webhook-info";
-import { CampaignInfoCard } from "./campaign-info-card";
-import { CampaignPolling } from "./campaign-polling";
+import { TriggerConfigurationCard } from "./trigger-configuration-card";
+import { TriggerPolling } from "./trigger-polling";
 
 interface CampaignDetailsPageProps {
   params: Promise<{ id: string }>;
@@ -34,9 +34,7 @@ export default async function CampaignDetailsPage({
   const details = await getCampaignDetails(id);
   if (!details) return notFound();
 
-  const { campaign, project, template, list, events, triggeredLogs } = details;
-
-  const isTriggered = campaign.type === "TRIGGERED";
+  const { campaign, project, template, events, triggeredLogs } = details;
 
   const getUniqueCount = (type: string) => {
     const emails = events
@@ -45,24 +43,15 @@ export default async function CampaignDetailsPage({
     return new Set(emails).size;
   };
 
-  const stats = isTriggered
-    ? {
-        sent: triggeredLogs.filter((l) => l.status === "SUCCESS").length,
-        delivered: triggeredLogs.filter((l) => l.status === "SUCCESS").length,
-        uniqueOpens: getUniqueCount("OPEN"),
-        totalOpens: events.filter((e) => e.type === "OPEN").length,
-        uniqueClicks: getUniqueCount("CLICK"),
-        totalClicks: events.filter((e) => e.type === "CLICK").length,
-        errors: triggeredLogs.filter((l) => l.status === "FAILED").length,
-      }
-    : {
-        sent: events.filter((e) => e.type === "SENT").length,
-        delivered: events.filter((e) => e.type === "DELIVERED").length,
-        uniqueOpens: getUniqueCount("OPEN"),
-        totalOpens: events.filter((e) => e.type === "OPEN").length,
-        uniqueClicks: getUniqueCount("CLICK"),
-        totalClicks: events.filter((e) => e.type === "CLICK").length,
-      };
+  const stats = {
+    sent: triggeredLogs.filter((l) => l.status === "SUCCESS").length,
+    delivered: triggeredLogs.filter((l) => l.status === "SUCCESS").length,
+    uniqueOpens: getUniqueCount("OPEN"),
+    totalOpens: events.filter((e) => e.type === "OPEN").length,
+    uniqueClicks: getUniqueCount("CLICK"),
+    totalClicks: events.filter((e) => e.type === "CLICK").length,
+    errors: triggeredLogs.filter((l) => l.status === "FAILED").length,
+  };
 
   const openRate =
     stats.sent > 0 ? Math.round((stats.uniqueOpens / stats.sent) * 100) : 0;
@@ -71,48 +60,44 @@ export default async function CampaignDetailsPage({
 
   return (
     <main className="max-w-6xl mx-auto py-10 px-8">
-      <CampaignPolling campaignId={campaign.id} status={campaign.status} />
+      <TriggerPolling campaignId={campaign.id} status={campaign.status} />
       <div className="mb-6 flex items-center justify-between">
         <Link
-          href="/campaigns"
+          href="/triggers"
           className="text-sm text-zinc-500 hover:text-zinc-800 flex items-center gap-1 transition-colors"
         >
           <ArrowLeft size={14} />
-          Back to Campaigns
+          Back to Transactional
         </Link>
 
-        {isTriggered && (
-          <Badge
-            variant="secondary"
-            className="flex items-center gap-1.5 px-3 py-1"
-          >
-            <Zap size={14} className="text-blue-600 fill-blue-600" />
-            Triggered Campaign
-          </Badge>
-        )}
+        <Badge
+          variant="secondary"
+          className="flex items-center gap-1.5 px-3 py-1"
+        >
+          <Zap size={14} className="text-blue-600 fill-blue-600" />
+          Transactional Email
+        </Badge>
       </div>
 
       <PageHeader
         title={campaign.name}
         description={
           campaign.description ||
-          (isTriggered
-            ? "API-driven campaign. Emails are sent automatically via webhook."
-            : "View campaign performance and event timeline.")
+          "API-driven email. Emails are sent automatically via webhook."
         }
         actions={
           <div className="flex items-center gap-3">
+            <code className="bg-zinc-100 px-2 py-1 rounded text-xs text-zinc-600 font-mono">
+              ID: {campaign.id}
+            </code>
             <Badge
               variant={
                 campaign.status === "COMPLETED" ? "success" : "secondary"
               }
               className="py-1.5 px-3"
             >
-              {isTriggered ? "ACTIVE" : campaign.status}
+              ACTIVE
             </Badge>
-            {!isTriggered && campaign.status === "DRAFT" && (
-              <SendCampaignButton campaignId={campaign.id} />
-            )}
           </div>
         }
       />
@@ -123,11 +108,10 @@ export default async function CampaignDetailsPage({
             {[
               { label: "Sent", value: stats.sent, icon: <Send size={16} /> },
               {
-                label: isTriggered ? "Errors" : "Delivered",
-                value: isTriggered ? stats.errors : stats.delivered,
-                icon: isTriggered ? <Terminal size={16} /> : <Mail size={16} />,
-                color:
-                  isTriggered && stats.errors! > 0 ? "text-red-500" : undefined,
+                label: "Errors",
+                value: stats.errors,
+                icon: <Terminal size={16} />,
+                color: stats.errors > 0 ? "text-red-500" : undefined,
               },
               {
                 label: "Open Rate",
@@ -161,54 +145,26 @@ export default async function CampaignDetailsPage({
             ))}
           </div>
 
-          {isTriggered && (
-            <WebhookInfo
-              campaignId={campaign.id}
-              sampleData={campaign.variablesSchema}
-            />
-          )}
+          <WebhookInfo
+            campaignId={campaign.id}
+            sampleData={campaign.variablesSchema}
+          />
 
           <section className="space-y-4">
             <h3 className="text-lg font-semibold flex items-center gap-2">
               <BarChart3 size={20} className="text-zinc-400" />
-              {isTriggered ? "Recent Activity" : "Campaign Results"}
+              Delivery Logs
             </h3>
-            <CampaignTimeline events={events} />
+            <DeliveryLogs events={events} />
           </section>
         </div>
 
         <div className="space-y-6">
-          <CampaignInfoCard
+          <TriggerConfigurationCard
             campaign={campaign}
             project={project}
             template={template}
           />
-
-          {!isTriggered && list && (
-            <Card className="p-6 space-y-4">
-              <h3 className="font-semibold flex items-center gap-2 border-b border-zinc-100 pb-4">
-                <Users size={18} className="text-zinc-400" />
-                Audience
-              </h3>
-              <div className="flex flex-col gap-2 p-3 bg-zinc-50 rounded-lg border border-zinc-100">
-                <div className="flex items-center gap-2 text-sm">
-                  <Users size={16} className="text-zinc-400" />
-                  <span className="font-medium text-zinc-900">{list.name}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="font-normal text-xs">
-                    {list.contactCount} contacts
-                  </Badge>
-                  <Link
-                    href={`/audience?projectId=${project.id}&listId=${list.id}`}
-                    className="text-[10px] text-blue-600 hover:underline"
-                  >
-                    Manage contacts →
-                  </Link>
-                </div>
-              </div>
-            </Card>
-          )}
         </div>
       </div>
     </main>
