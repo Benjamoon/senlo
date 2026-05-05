@@ -67,13 +67,13 @@ export default function ProjectCampaignsPage() {
       </div>
 
       <PageHeader
-        title={`Transactional: ${project.name}`}
-        description="Manage transactional emails specific to this project."
+        title={`Triggers: ${project.name}`}
+        description="Manage email triggers specific to this project."
         actions={
-          <Link href="/triggers/new">
+          <Link href={`/triggers/new?projectId=${projectId}`}>
             <Button>
               <Plus size={16} />
-              New Transactional
+              New Trigger
             </Button>
           </Link>
         }
@@ -82,12 +82,13 @@ export default function ProjectCampaignsPage() {
       {campaigns.length === 0 ? (
         <EmptyState
           icon={<Send size={40} />}
-          title="No transactional emails in this project"
+          title="No triggers in this project"
+          description="Create your first email trigger to start sending emails via API."
           action={
-            <Link href="/triggers/new">
+            <Link href={`/triggers/new?projectId=${projectId}`}>
               <Button>
                 <Plus size={16} />
-                New Transactional
+                New Trigger
               </Button>
             </Link>
           }

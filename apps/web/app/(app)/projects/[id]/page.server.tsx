@@ -84,7 +84,7 @@ export default function ProjectPage({ projectId }: ProjectPageClientProps) {
         title={project.name}
         description={
           project.description ||
-          "Manage your email templates and transactional emails for this project."
+          "Manage your email templates and triggers for this project."
         }
         actions={
           <div className="flex items-center gap-3">

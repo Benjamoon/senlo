@@ -13,7 +13,11 @@ type CampaignEventInsert = typeof campaignEvents.$inferInsert;
  * Extends BaseRepository for common operations (findById, delete).
  */
 export class CampaignRepository
-  extends BaseRepository<typeof campaigns, typeof campaigns.$inferSelect, Campaign>
+  extends BaseRepository<
+    typeof campaigns,
+    typeof campaigns.$inferSelect,
+    Campaign
+  >
   implements ICampaignRepository
 {
   protected table = campaigns;
@@ -37,6 +41,7 @@ export class CampaignRepository
       subject: row.subject,
       preheader: row.preheader,
       templateId: row.templateId,
+      localeTemplates: row.localeTemplates as Record<string, number> | null,
       listId: row.listId,
       variablesSchema: row.variablesSchema as Record<string, any> | null,
       scheduledAt: row.scheduledAt,
@@ -107,7 +112,7 @@ export class CampaignRepository
    * @returns The created campaign
    */
   async create(
-    data: Omit<CampaignInsert, "id" | "createdAt" | "updatedAt">
+    data: Omit<CampaignInsert, "id" | "createdAt" | "updatedAt">,
   ): Promise<Campaign> {
     const [row] = await db
       .insert(campaigns)
@@ -129,7 +134,9 @@ export class CampaignRepository
    */
   async update(
     id: number,
-    data: Partial<Omit<CampaignInsert, "id" | "projectId" | "createdAt" | "updatedAt">>
+    data: Partial<
+      Omit<CampaignInsert, "id" | "projectId" | "createdAt" | "updatedAt">
+    >,
   ): Promise<Campaign | null> {
     const [row] = await db
       .update(campaigns)
@@ -153,7 +160,7 @@ export class CampaignRepository
    * @returns The created event
    */
   async logEvent(
-    data: Omit<CampaignEventInsert, "id" | "occurredAt">
+    data: Omit<CampaignEventInsert, "id" | "occurredAt">,
   ): Promise<CampaignEvent> {
     const [row] = await db
       .insert(campaignEvents)

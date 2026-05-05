@@ -36,6 +36,7 @@ export class EmailTemplateRepository extends BaseRepository<
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
       status: row.status as EmailTemplateStatus,
+      locale: row.locale,
     };
   }
 
@@ -71,6 +72,7 @@ export class EmailTemplateRepository extends BaseRepository<
         html: input.html,
         designJson: input.designJson ?? null,
         status: "draft",
+        locale: input.locale ?? "en",
         createdAt: now,
         updatedAt: now,
       })
@@ -96,6 +98,7 @@ export class EmailTemplateRepository extends BaseRepository<
       set.designJson = input.designJson;
     }
     if (typeof input.status !== "undefined") set.status = input.status;
+    if (typeof input.locale !== "undefined") set.locale = input.locale;
 
     const [row] = await db
       .update(emailTemplates)

@@ -85,6 +85,7 @@ export default async function EditorIdPage({
       hasAiProvider={hasAiProvider}
       templateName={template.name}
       templateSubject={template.subject}
+      templateLocale={template.locale}
       mergeTags={mergeTags}
       onSave={saveTemplateFromEditor}
       onSendTest={sendTestEmailAction}

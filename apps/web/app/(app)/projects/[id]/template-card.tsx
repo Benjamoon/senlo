@@ -55,6 +55,12 @@ export function TemplateCard({ template, projectId }: TemplateCardProps) {
               <div className="flex items-center gap-2">
                 <Badge
                   variant="outline"
+                  className="bg-zinc-50 text-[10px] font-bold uppercase tracking-wider text-zinc-500 border-zinc-200"
+                >
+                  {template.locale}
+                </Badge>
+                <Badge
+                  variant="outline"
                   className="flex items-center gap-1 font-normal text-zinc-500 border-zinc-200"
                 >
                   <Calendar size={12} />

@@ -19,12 +19,13 @@ interface EditorLayoutProps {
   hasAiProvider?: boolean;
   templateName: string;
   templateSubject: string;
+  templateLocale?: string;
   mergeTags?: MergeTag[];
   onSave?: (
     id: number,
     design: EmailDesignDocument,
     html: string,
-    metadata?: { name: string; subject: string },
+    metadata?: { name: string; subject: string; locale?: string },
   ) => Promise<any>;
   onSendTest?: (
     id: number,
@@ -48,6 +49,7 @@ export const EditorLayout: FC<EditorLayoutProps> = ({
   hasAiProvider = false,
   templateName,
   templateSubject,
+  templateLocale = "en",
   mergeTags = [],
   onSave,
   onSendTest,
@@ -69,7 +71,7 @@ export const EditorLayout: FC<EditorLayoutProps> = ({
     setDesign(initialDesign);
     setTemplateId(templateId);
     setProjectInfo(projectId, hasAiProvider);
-    setTemplateMetadata(templateName, templateSubject);
+    setTemplateMetadata(templateName, templateSubject, templateLocale);
     setCustomMergeTags(mergeTags);
     if (onSave) {
       setOnSave(onSave);
@@ -90,6 +92,7 @@ export const EditorLayout: FC<EditorLayoutProps> = ({
     templateId,
     templateName,
     templateSubject,
+    templateLocale,
     mergeTags,
     setDesign,
     setTemplateId,

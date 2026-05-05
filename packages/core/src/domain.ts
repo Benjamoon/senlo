@@ -56,6 +56,7 @@ export interface Campaign {
   preheader?: string | null;
 
   templateId: number;
+  localeTemplates?: Record<string, number> | null;
   listId?: number | null;
   variablesSchema?: Record<string, any> | null;
   scheduledAt?: Date | null;

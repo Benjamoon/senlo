@@ -41,7 +41,7 @@ export async function saveTemplateFromEditor(
   id: number,
   design: EmailDesignDocument,
   html: string,
-  metadata?: { name: string; subject: string },
+  metadata?: { name: string; subject: string; locale?: string },
 ): Promise<{ success: boolean }> {
   try {
     const { template } = await authorizeTemplate(id);
@@ -52,6 +52,7 @@ export async function saveTemplateFromEditor(
       html,
       name: metadata?.name,
       subject: metadata?.subject,
+      locale: metadata?.locale,
     });
 
     revalidatePath(`/projects/${template.projectId}`);

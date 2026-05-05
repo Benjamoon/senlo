@@ -7,9 +7,14 @@ import { Webhook, Copy, Check, Info } from "lucide-react";
 interface WebhookInfoProps {
   campaignId: number;
   sampleData?: Record<string, unknown> | null;
+  hasLocales?: boolean;
 }
 
-export function WebhookInfo({ campaignId, sampleData }: WebhookInfoProps) {
+export function WebhookInfo({
+  campaignId,
+  sampleData,
+  hasLocales,
+}: WebhookInfoProps) {
   const [copied, setCopied] = useState(false);
   const [webhookUrl, setWebhookUrl] = useState("");
 
@@ -19,12 +24,13 @@ export function WebhookInfo({ campaignId, sampleData }: WebhookInfoProps) {
 
   const sampleJson = JSON.stringify(
     {
-      campaignId: String(campaignId),
+      id: campaignId,
       to: "customer@example.com",
       data: sampleData || {
         user_name: "Alex",
         order_id: "#12345",
       },
+      ...(hasLocales ? { locale: "en" } : {}),
     },
     null,
     2
@@ -98,12 +104,22 @@ export function WebhookInfo({ campaignId, sampleData }: WebhookInfoProps) {
 
         <div className="flex items-start gap-2.5 p-3 bg-white/50 border border-blue-100 rounded-lg">
           <Info size={16} className="text-blue-600 mt-0.5" />
-          <p className="text-xs text-blue-800 leading-relaxed">
-            Include your API Key in the{" "}
-            <code>Authorization: Bearer YOUR_KEY</code> header. The{" "}
-            <code>data</code> object properties will be used to replace merge
-            tags in your template.
-          </p>
+          <div className="text-xs text-blue-800 leading-relaxed space-y-1">
+            <p>
+              Include your API Key in the{" "}
+              <code>Authorization: Bearer YOUR_KEY</code> header.
+            </p>
+            <p>
+              The <code>data</code> object properties will be used to replace
+              merge tags.
+            </p>
+            {hasLocales && (
+              <p>
+                Use the <code>locale</code> field to trigger a specific
+                language variant of this email.
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </Card>

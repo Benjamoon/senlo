@@ -3,7 +3,7 @@ export const openApiSpec = {
   info: {
     title: "Senlo Public API",
     version: "1.0.0",
-    description: "API for triggering transactional emails and managing templates.",
+    description: "API for triggering emails and managing templates.",
   },
   servers: [
     {
@@ -28,7 +28,7 @@ export const openApiSpec = {
   paths: {
     "/triggered": {
       post: {
-        summary: "Trigger a transactional email",
+        summary: "Trigger an email",
         tags: ["Emails"],
         requestBody: {
           required: true,
@@ -36,11 +36,12 @@ export const openApiSpec = {
             "application/json": {
               schema: {
                 type: "object",
-                required: ["campaignId", "to"],
+                required: ["id", "to"],
                 properties: {
-                  campaignId: { type: "number" },
+                  id: { type: "number", description: "Trigger ID" },
                   to: { type: "string", format: "email" },
                   data: { type: "object", description: "Merge tags data" },
+                  locale: { type: "string", description: "Target locale (e.g. en, ru)" },
                 },
               },
             },

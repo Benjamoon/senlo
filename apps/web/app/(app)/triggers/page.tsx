@@ -7,13 +7,13 @@ export default function TriggersPage() {
   return (
     <main className="max-w-6xl mx-auto py-10 px-8">
       <PageHeader
-        title="Transactional Emails"
-        description="Monitor and manage all your transactional emails in one place."
+        title="Email Triggers"
+        description="Monitor and manage all your email triggers in one place."
         actions={
           <Link href="/triggers/new">
             <Button>
               <Plus size={16} />
-              New Transactional
+              New Trigger
             </Button>
           </Link>
         }

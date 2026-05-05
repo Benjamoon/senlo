@@ -28,6 +28,7 @@ export const EditorHeader = ({ projectId }: EditorHeaderProps) => {
 
   const templateName = useEditorStore((s) => s.templateName);
   const templateSubject = useEditorStore((s) => s.templateSubject);
+  const templateLocale = useEditorStore((s) => s.templateLocale);
   const setTemplateMetadata = useEditorStore((s) => s.setTemplateMetadata);
 
   const previewMode = useEditorStore((s) => s.previewMode);
@@ -45,11 +46,13 @@ export const EditorHeader = ({ projectId }: EditorHeaderProps) => {
 
   const [editName, setEditName] = useState(templateName);
   const [editSubject, setEditSubject] = useState(templateSubject);
+  const [editLocale, setEditLocale] = useState(templateLocale);
 
   useEffect(() => {
     setEditName(templateName);
     setEditSubject(templateSubject);
-  }, [templateName, templateSubject]);
+    setEditLocale(templateLocale);
+  }, [templateName, templateSubject, templateLocale]);
 
   // Compute canUndo/canRedo directly from history arrays
   const canUndo = historyPast.length > 0;
@@ -88,6 +91,7 @@ export const EditorHeader = ({ projectId }: EditorHeaderProps) => {
       await onSave(templateId, design, html, {
         name: templateName,
         subject: templateSubject,
+        locale: templateLocale,
       });
       setDirty(false);
     } catch (error) {
@@ -108,8 +112,9 @@ export const EditorHeader = ({ projectId }: EditorHeaderProps) => {
       await onSave(templateId, design, html, {
         name: editName,
         subject: editSubject,
+        locale: editLocale,
       });
-      setTemplateMetadata(editName, editSubject);
+      setTemplateMetadata(editName, editSubject, editLocale);
       setIsSettingsOpen(false);
       // We don't need to setDirty(true) here since we just saved to server
     } catch (error) {
@@ -248,6 +253,15 @@ export const EditorHeader = ({ projectId }: EditorHeaderProps) => {
               value={editSubject}
               onChange={(e) => setEditSubject(e.target.value)}
               placeholder="e.g. Welcome to our community!"
+              required
+            />
+          </FormField>
+
+          <FormField label="Locale" required hint="Template language (e.g. en, ru, es)">
+            <Input
+              value={editLocale}
+              onChange={(e) => setEditLocale(e.target.value)}
+              placeholder="en"
               required
             />
           </FormField>

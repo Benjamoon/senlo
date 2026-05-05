@@ -12,7 +12,7 @@ interface CreateTemplateDialogProps {
 
 export function CreateTemplateDialog({ projectId }: CreateTemplateDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
-  
+
   // Use React Query mutation for creating templates
   const { mutate: createTemplate, isPending: isCreating } = useCreateTemplate();
 
@@ -20,7 +20,7 @@ export function CreateTemplateDialog({ projectId }: CreateTemplateDialogProps) {
     e.preventDefault();
     const form = e.currentTarget;
     const formData = new FormData(form);
-    
+
     createTemplate(
       { projectId, formData },
       {
@@ -34,8 +34,8 @@ export function CreateTemplateDialog({ projectId }: CreateTemplateDialogProps) {
             error: error instanceof Error ? error.message : String(error),
           });
           alert("Failed to create template. Please try again.");
-        }
-      }
+        },
+      },
     );
   }
 
@@ -76,6 +76,14 @@ export function CreateTemplateDialog({ projectId }: CreateTemplateDialogProps) {
               placeholder="e.g. Welcome to Senlo!"
               required
             />
+          </FormField>
+
+          <FormField
+            label="Locale"
+            required
+            hint="The language of this template (e.g. en, ru, es)"
+          >
+            <Input name="locale" defaultValue="en" placeholder="en" required />
           </FormField>
 
           <div className="flex justify-end gap-3 mt-6">

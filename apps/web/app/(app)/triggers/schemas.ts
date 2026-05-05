@@ -39,4 +39,15 @@ export const UpdateCampaignSchema = z.object({
         return null;
       }
     }),
+  localeTemplates: z
+    .string()
+    .optional()
+    .transform((val) => {
+      if (!val) return null;
+      try {
+        return JSON.parse(val);
+      } catch {
+        return null;
+      }
+    }),
 });

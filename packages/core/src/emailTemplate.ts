@@ -12,6 +12,7 @@ export interface EmailTemplate {
   createdAt: Date;
   updatedAt: Date;
   status: EmailTemplateStatus;
+  locale: string;
 }
 
 export interface CreateEmailTemplateInput {
@@ -20,6 +21,7 @@ export interface CreateEmailTemplateInput {
   subject: string;
   html: string;
   designJson: EmailDesignDocument | null;
+  locale?: string;
 }
 
 export interface UpdateEmailTemplateInput {
@@ -29,4 +31,5 @@ export interface UpdateEmailTemplateInput {
   html?: string;
   designJson?: EmailDesignDocument | null;
   status?: EmailTemplateStatus;
+  locale?: string;
 }

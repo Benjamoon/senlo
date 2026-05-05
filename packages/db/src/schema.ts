@@ -142,6 +142,7 @@ export const emailTemplates = pgTable("email_templates", {
   html: text("html").notNull(),
   designJson: jsonb("design_json"),
   status: text("status").notNull().default("draft"),
+  locale: text("locale").notNull().default("en"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -220,6 +221,7 @@ export const campaigns = pgTable("campaigns", {
   templateId: integer("template_id")
     .notNull()
     .references(() => emailTemplates.id, { onDelete: "cascade" }),
+  localeTemplates: jsonb("locale_templates"),
   listId: integer("list_id").references(() => recipientLists.id, {
     onDelete: "cascade",
   }),

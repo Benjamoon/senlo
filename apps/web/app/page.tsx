@@ -45,7 +45,7 @@ export default function HomePage() {
                 href="/triggers"
                 className="hover:text-zinc-900 transition-colors"
               >
-                Transactional
+                Triggers
               </Link>
               <Link
                 href="https://github.com/IgorFilippov3/senlo"
@@ -95,8 +95,8 @@ export default function HomePage() {
 
             <p className="text-lg md:text-xl text-zinc-500 mb-12 max-w-3xl mx-auto leading-relaxed">
               Take total control of your email stack. A powerful platform that
-              combines a professional visual editor, transactional email management, and
-              full data ownership.
+              combines a professional visual editor, email trigger management,
+              and full data ownership.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -211,10 +211,11 @@ export default function HomePage() {
                 <Send className="w-6 h-6 text-blue-600" />
               </div>
               <h3 className="text-xl font-bold text-zinc-900 mb-4">
-                Transactional Logs
+                Trigger Logs
               </h3>
               <p className="text-zinc-500 leading-relaxed">
-                Track every triggered email in real-time. Full visibility into delivery status, errors, and performance metrics.
+                Track every triggered email in real-time. Full visibility into
+                delivery status, errors, and performance metrics.
               </p>
             </Card>
 
@@ -227,7 +228,7 @@ export default function HomePage() {
                 <Zap className="w-6 h-6 text-amber-600" />
               </div>
               <h3 className="text-xl font-bold text-zinc-900 mb-4">
-                Transactional API
+                Trigger API
               </h3>
               <p className="text-zinc-500 leading-relaxed">
                 Trigger order confirmations, password resets, and notifications
@@ -327,7 +328,7 @@ export default function HomePage() {
                 </li>
                 <li>
                   <Link href="/triggers" className="hover:text-zinc-900">
-                    Transactional
+                    Triggers
                   </Link>
                 </li>
                 <li>

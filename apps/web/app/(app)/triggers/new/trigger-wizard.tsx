@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Button,
   Card,
@@ -9,6 +9,7 @@ import {
   Textarea,
   JsonEditor,
   PageHeader,
+  Badge,
 } from "@senlo/ui";
 import { Project } from "@senlo/core";
 import { useRouter } from "next/navigation";
@@ -21,19 +22,20 @@ import {
   Check,
   Settings,
   Layout,
-  Users,
   Send,
-  List as ListIcon,
-  Zap,
 } from "lucide-react";
 
-interface CampaignWizardProps {
+interface TriggerWizardProps {
   projects: Project[];
+  initialProjectId?: string;
 }
 
-type Step = "setup" | "content" | "audience" | "review";
+type Step = "setup" | "content" | "review";
 
-export function TriggerWizard({ projects }: TriggerWizardProps) {
+export function TriggerWizard({
+  projects,
+  initialProjectId,
+}: TriggerWizardProps) {
   const router = useRouter();
   const [step, setStep] = useState<Step>("setup");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,12 +43,12 @@ export function TriggerWizard({ projects }: TriggerWizardProps) {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    projectId: "",
+    projectId: initialProjectId || "",
     templateId: "",
     fromName: "",
     fromEmail: "",
     subject: "",
-    type: "TRIGGERED" as "TRIGGERED",
+    type: "TRIGGERED" as const,
     variablesSchema: "",
   });
 
@@ -75,7 +77,7 @@ export function TriggerWizard({ projects }: TriggerWizardProps) {
     try {
       const data = new FormData();
       Object.entries(formData).forEach(([key, value]) =>
-        data.append(key, value)
+        data.append(key, value),
       );
 
       const result = await createCampaignAction(data);
@@ -108,7 +110,6 @@ export function TriggerWizard({ projects }: TriggerWizardProps) {
         templateId: formData.templateId
           ? Number(formData.templateId)
           : undefined,
-        listId: formData.listId ? Number(formData.listId) : undefined,
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
       });
@@ -124,17 +125,17 @@ export function TriggerWizard({ projects }: TriggerWizardProps) {
   ];
 
   const currentProject = projects.find(
-    (p) => p.id === Number(formData.projectId)
+    (p) => p.id === Number(formData.projectId),
   );
   const currentTemplate = templates.find(
-    (t) => t.id === Number(formData.templateId)
+    (t) => t.id === Number(formData.templateId),
   );
 
   return (
     <div className="max-w-4xl mx-auto py-10 px-8">
       <PageHeader
-        title="Create New Email"
-        description="Configure your transactional email trigger."
+        title="Create New Trigger"
+        description="Configure your email trigger."
       />
 
       <div className="flex items-center justify-between mb-10 relative">
@@ -153,8 +154,8 @@ export function TriggerWizard({ projects }: TriggerWizardProps) {
                   isActive
                     ? "border-blue-600 bg-blue-50 text-blue-600 shadow-md"
                     : isCompleted
-                    ? "border-green-500 bg-green-50 text-green-500"
-                    : "border-zinc-200 bg-white text-zinc-400"
+                      ? "border-green-500 bg-green-50 text-green-500"
+                      : "border-zinc-200 bg-white text-zinc-400"
                 }`}
               >
                 {isCompleted ? <Check size={20} /> : s.icon}
@@ -267,7 +268,7 @@ export function TriggerWizard({ projects }: TriggerWizardProps) {
             <FormField
               label="Select Template"
               required
-              hint="Choose the design for this campaign"
+              hint="Choose the design for this trigger"
             >
               {!formData.projectId ? (
                 <div className="p-4 bg-amber-50 text-amber-700 text-sm rounded-md border border-amber-100">
@@ -293,8 +294,16 @@ export function TriggerWizard({ projects }: TriggerWizardProps) {
                           : "border-zinc-200 hover:border-zinc-300 bg-white"
                       }`}
                     >
-                      <h4 className="font-medium text-sm">{t.name}</h4>
-                      <p className="text-xs text-zinc-500 mt-1 truncate">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <h4 className="font-medium text-sm">{t.name}</h4>
+                        <Badge
+                          variant="outline"
+                          className="bg-white text-[9px] font-bold uppercase tracking-wider text-zinc-500 border-zinc-200 py-0 px-1.5 h-4"
+                        >
+                          {t.locale}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-zinc-500 truncate">
                         {t.subject}
                       </p>
                     </div>
@@ -305,66 +314,7 @@ export function TriggerWizard({ projects }: TriggerWizardProps) {
           </div>
         )}
 
-        {step === "audience" && (
-          <div className="space-y-6">
-            <FormField
-              label="Select Recipient List"
-              required
-              hint="Choose which list of contacts will receive this campaign"
-            >
-              {!formData.projectId ? (
-                <div className="p-4 bg-amber-50 text-amber-700 text-sm rounded-md border border-amber-100">
-                  Please select a project in the first step.
-                </div>
-              ) : isLoadingLists ? (
-                <div className="py-8 text-center text-zinc-500">
-                  Loading lists...
-                </div>
-              ) : lists.length === 0 ? (
-                <div className="py-12 text-center bg-zinc-50 rounded-xl border-2 border-dashed border-zinc-200">
-                  <ListIcon size={32} className="mx-auto text-zinc-300 mb-2" />
-                  <p className="text-sm text-zinc-500">
-                    No lists found in this project.
-                  </p>
-                  <p className="text-xs text-zinc-400 mt-1">
-                    Create a list in the Audience section first.
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {lists.map((l) => (
-                    <div
-                      key={l.id}
-                      onClick={() => updateField("listId", String(l.id))}
-                      className={`p-4 border rounded-xl cursor-pointer transition-all ${
-                        formData.listId === String(l.id)
-                          ? "border-blue-600 bg-blue-50 shadow-sm"
-                          : "border-zinc-200 hover:border-zinc-300 bg-white"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <ListIcon
-                          size={16}
-                          className={
-                            formData.listId === String(l.id)
-                              ? "text-blue-600"
-                              : "text-zinc-400"
-                          }
-                        />
-                        <h4 className="font-medium text-sm">{l.name}</h4>
-                      </div>
-                      {l.description && (
-                        <p className="text-xs text-zinc-500 mt-1 line-clamp-1">
-                          {l.description}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </FormField>
-          </div>
-        )}
+        {/* Removed entire audience step section */}
 
         {step === "review" && (
           <div className="space-y-8">
@@ -400,9 +350,21 @@ export function TriggerWizard({ projects }: TriggerWizardProps) {
                     <span className="text-zinc-500">Subject:</span>
                     <span className="font-medium">{formData.subject}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
+                  <div className="flex justify-between text-sm items-center">
                     <span className="text-zinc-500">Template:</span>
-                    <span className="font-medium">{currentTemplate?.name}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">
+                        {currentTemplate?.name}
+                      </span>
+                      {currentTemplate && (
+                        <Badge
+                          variant="outline"
+                          className="bg-zinc-50 text-[10px] font-bold uppercase tracking-wider text-zinc-500 border-zinc-200"
+                        >
+                          {currentTemplate.locale}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -413,8 +375,8 @@ export function TriggerWizard({ projects }: TriggerWizardProps) {
                 <Settings size={18} />
               </div>
               <p className="text-sm text-blue-800">
-                Ready to go! Once you create this transactional email, you
-                will receive a <strong>Webhook URL</strong>
+                Ready to go! Once you create this email trigger, you will
+                receive a <strong>Webhook URL</strong>
                 to start sending from your backend.
               </p>
             </div>
@@ -433,7 +395,7 @@ export function TriggerWizard({ projects }: TriggerWizardProps) {
 
           {step === "review" ? (
             <Button onClick={handleSubmit} disabled={isSubmitting}>
-              {isSubmitting ? "Creating..." : "Create Email"}
+              {isSubmitting ? "Creating..." : "Create Trigger"}
               <Check size={16} />
             </Button>
           ) : (

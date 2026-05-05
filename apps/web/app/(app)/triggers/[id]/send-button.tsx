@@ -24,7 +24,7 @@ export function SendCampaignButton({ campaignId }: SendCampaignButtonProps) {
       return result;
     },
     onSuccess: (result) => {
-      alert(`Successfully sent to ${result.sentCount} contacts!`);
+      alert(`Successfully sent to ${result.data.sentCount} contacts!`);
 
       // Invalidate campaigns data to refresh status
       queryClient.invalidateQueries({

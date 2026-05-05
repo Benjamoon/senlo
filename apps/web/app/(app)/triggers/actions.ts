@@ -7,6 +7,7 @@ import {
   EmailTemplateRepository,
   EmailProviderRepository,
   TriggeredSendLogRepository,
+  RecipientListRepository,
 } from "@senlo/db";
 import {
   Campaign,
@@ -17,7 +18,6 @@ import {
   encodeUnsubscribeToken,
   renderEmailDesign,
   wrapLinksWithTracking,
-  MailerFactory,
   EmailDesignDocument,
 } from "@senlo/core";
 import { emailQueue } from "@senlo/core/src/queue";
@@ -96,14 +96,14 @@ export async function listAllCampaigns(): Promise<ActionResult<Campaign[]>> {
     // I'll filter them manually or just get all for simplicity if the list is small,
     // but better to do it correctly.
     const allCampaigns = await Promise.all(
-      projectIds.map((pid) => campaignRepo.findByProject(pid))
+      projectIds.map((pid) => campaignRepo.findByProject(pid)),
     );
     return allCampaigns.flat();
   });
 }
 
 export async function listProjectCampaigns(
-  projectId: number
+  projectId: number,
 ): Promise<ActionResult<Campaign[]>> {
   const session = await auth();
   if (!session?.user?.id)
@@ -145,7 +145,7 @@ export async function getWizardData(): Promise<
 }
 
 export async function getTemplatesByProject(
-  projectId: number
+  projectId: number,
 ): Promise<EmailTemplate[]> {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
@@ -189,7 +189,7 @@ export async function createCampaignAction(formData: FormData) {
       throw new Error("Unauthorized");
     }
 
-    logger.info("Creating transactional email", {
+    logger.info("Creating email trigger", {
       name,
       projectId,
       templateId,
@@ -212,11 +212,13 @@ export async function createCampaignAction(formData: FormData) {
 
     revalidatePath("/triggers");
 
-    logger.info("Transactional email created successfully", { campaignId: campaign.id });
+    logger.info("Email trigger created successfully", {
+      campaignId: campaign.id,
+    });
 
     return { success: true, data: campaign };
   } catch (error) {
-    logger.error("Failed to create transactional email", {
+    logger.error("Failed to create email trigger", {
       error: error instanceof Error ? error.message : String(error),
       name,
       projectId,
@@ -224,7 +226,7 @@ export async function createCampaignAction(formData: FormData) {
     return {
       error: {
         formErrors: [],
-        fieldErrors: { general: ["Failed to create transactional email"] },
+        fieldErrors: { general: ["Failed to create email trigger"] },
       },
     };
   }
@@ -242,8 +244,15 @@ export async function updateCampaignAction(id: number, formData: FormData) {
       };
     }
 
-    const { name, description, fromName, fromEmail, subject, variablesSchema } =
-      parsed.data;
+    const {
+      name,
+      description,
+      fromName,
+      fromEmail,
+      subject,
+      variablesSchema,
+      localeTemplates,
+    } = parsed.data;
 
     logger.info("Updating campaign", { campaignId: id, name });
 
@@ -254,6 +263,7 @@ export async function updateCampaignAction(id: number, formData: FormData) {
       fromEmail,
       subject,
       variablesSchema,
+      localeTemplates,
     });
 
     if (!updatedCampaign) {
@@ -285,8 +295,110 @@ export async function updateCampaignAction(id: number, formData: FormData) {
   }
 }
 
+export async function sendCampaignAction(
+  id: number,
+): Promise<ActionResult<{ sentCount: number }>> {
+  return withErrorHandling(async () => {
+    const { campaign, project } = await getAuthorizedCampaign(id);
+
+    if (!project.providerId) {
+      throw new Error("No email provider configured for this project");
+    }
+
+    const [template, provider] = await Promise.all([
+      templateRepo.findById(campaign.templateId),
+      providerRepo.findById(project.providerId),
+    ]);
+
+    if (!template) throw new Error("Template not found");
+    if (!provider) throw new Error("Email provider not found");
+
+    if (!campaign.listId) {
+      throw new Error("No recipient list selected for this campaign");
+    }
+
+    const listRepo = new RecipientListRepository();
+    const contacts = await listRepo.getContacts(campaign.listId, true);
+
+    if (contacts.length === 0) {
+      throw new Error("Recipient list is empty");
+    }
+
+    logger.info("Starting campaign send", {
+      campaignId: id,
+      recipientCount: contacts.length,
+    });
+
+    await campaignRepo.update(id, {
+      status: "SENDING",
+      sentAt: new Date(),
+    });
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+    // Queue emails
+    await Promise.all(
+      contacts.map(async (contact) => {
+        const emailEncoded = encodeURIComponent(contact.email);
+        const unsubscribeToken = encodeUnsubscribeToken({
+          contactId: contact.id,
+          campaignId: id,
+        });
+        const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${unsubscribeToken}`;
+
+        const openTrackingUrl = `${baseUrl}/api/track/open/${id}/${emailEncoded}`;
+        const trackingPixel = `<img src="${openTrackingUrl}" width="1" height="1" style="display:none !important;" alt="" />`;
+
+        const clickTrackingBaseUrl = `${baseUrl}/api/track/click/${id}/${emailEncoded}`;
+
+        let personalizedHtml = template.designJson
+          ? renderEmailDesign(template.designJson as EmailDesignDocument, {
+              baseUrl,
+              data: {
+                contact,
+                unsubscribeUrl,
+              },
+            })
+          : template.html;
+
+        personalizedHtml = wrapLinksWithTracking(
+          personalizedHtml,
+          clickTrackingBaseUrl,
+        );
+        personalizedHtml += trackingPixel;
+
+        const fromAddress = campaign.fromName
+          ? `${campaign.fromName} <${campaign.fromEmail || "hello@senlo.io"}>`
+          : campaign.fromEmail || "hello@senlo.io";
+
+        return emailQueue.add(`campaign-${id}-${contact.id}-${Date.now()}`, {
+          campaignId: id,
+          contactId: contact.id,
+          email: contact.email,
+          from: fromAddress,
+          subject: campaign.subject || template.subject,
+          html: personalizedHtml,
+          providerId: project.providerId!,
+        });
+      }),
+    );
+
+    await campaignRepo.update(id, { status: "COMPLETED" });
+
+    logger.info("Campaign queued successfully", {
+      campaignId: id,
+      sentCount: contacts.length,
+    });
+
+    revalidatePath(`/triggers/${id}`);
+    revalidatePath("/triggers");
+
+    return { sentCount: contacts.length };
+  });
+}
+
 export async function deleteCampaignAction(
-  id: number
+  id: number,
 ): Promise<ActionResult<void>> {
   return withErrorHandling(async () => {
     await getAuthorizedCampaign(id);

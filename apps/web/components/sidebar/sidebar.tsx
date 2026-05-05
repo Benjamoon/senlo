@@ -142,7 +142,7 @@ export function Sidebar() {
             />
             <NavItem
               href={`/projects/${projectId}/triggers`}
-              label="Transactional"
+              label="Triggers"
               icon={Zap}
               isActive={pathname.startsWith(`/projects/${projectId}/triggers`)}
             />
@@ -173,7 +173,7 @@ export function Sidebar() {
             />
             <NavItem
               href="/triggers"
-              label="Transactional"
+              label="Triggers"
               icon={Zap}
               isActive={pathname.startsWith("/triggers")}
             />

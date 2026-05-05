@@ -3,8 +3,13 @@ import { TriggerWizard } from "./trigger-wizard";
 
 export const dynamic = "force-dynamic";
 
-export default async function NewCampaignPage() {
+export default async function NewCampaignPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ projectId?: string }>;
+}) {
   const result = await getWizardData();
+  const { projectId } = await searchParams;
 
   if (!result.success) {
     return (
@@ -21,7 +26,7 @@ export default async function NewCampaignPage() {
               Failed to load wizard
             </h1>
             <p className="text-gray-600">
-              We could not load the data needed to create a transactional email. Please try
+              We could not load the data needed to create a trigger. Please try
               again.
             </p>
           </div>
@@ -30,5 +35,10 @@ export default async function NewCampaignPage() {
     );
   }
 
-  return <TriggerWizard projects={result.data.projects} />;
+  return (
+    <TriggerWizard
+      projects={result.data.projects}
+      initialProjectId={projectId}
+    />
+  );
 }

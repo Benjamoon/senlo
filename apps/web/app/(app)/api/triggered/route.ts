@@ -15,9 +15,11 @@ import { emailQueue } from "@senlo/core/src/queue";
 import { logger, validateApiKey } from "apps/web/lib";
 
 interface TriggeredEmailRequest {
-  campaignId: string | number;
+  id?: string | number;
+  campaignId?: string | number;
   to: string;
   data?: Record<string, unknown>;
+  locale?: string;
 }
 
 const campaignRepo = new CampaignRepository();
@@ -39,15 +41,16 @@ export async function POST(req: NextRequest) {
     if (!body) {
       return NextResponse.json(
         { error: "Request body is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
-    const { campaignId, to, data } = body;
+    const { id, campaignId: bodyCampaignId, to, data, locale } = body;
+    const campaignId = id || bodyCampaignId;
 
     if (!campaignId || !to) {
       return NextResponse.json(
-        { error: "campaignId and to (email) are required" },
-        { status: 400 }
+        { error: "id and to (email) are required" },
+        { status: 400 },
       );
     }
 
@@ -55,33 +58,48 @@ export async function POST(req: NextRequest) {
     if (!campaign || campaign.projectId !== apiKey.projectId) {
       return NextResponse.json(
         { error: "Campaign not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     if (campaign.type !== "TRIGGERED") {
       return NextResponse.json(
         { error: "This campaign is not configured for API triggers" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
+    // Locale-based template selection
+    let templateId = campaign.templateId;
+    if (
+      locale &&
+      campaign.localeTemplates &&
+      campaign.localeTemplates[locale]
+    ) {
+      templateId = campaign.localeTemplates[locale];
+      logger.info("Using localized template", {
+        campaignId: campaign.id,
+        locale,
+        templateId,
+      });
+    }
+
     const [template, project] = await Promise.all([
-      templateRepo.findById(campaign.templateId),
+      templateRepo.findById(templateId),
       projectRepo.findById(campaign.projectId),
     ]);
 
     if (!template)
       return NextResponse.json(
         { error: "Template not found" },
-        { status: 500 }
+        { status: 500 },
       );
     if (!project)
       return NextResponse.json({ error: "Project not found" }, { status: 500 });
     if (!project.providerId) {
       return NextResponse.json(
         { error: "No email provider configured for this project" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -89,7 +107,7 @@ export async function POST(req: NextRequest) {
     if (!provider) {
       return NextResponse.json(
         { error: "Email provider not found" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -114,7 +132,7 @@ export async function POST(req: NextRequest) {
 
     personalizedHtml = wrapLinksWithTracking(
       personalizedHtml,
-      clickTrackingBaseUrl
+      clickTrackingBaseUrl,
     );
 
     personalizedHtml += trackingPixel;
@@ -123,23 +141,29 @@ export async function POST(req: NextRequest) {
       ? `${campaign.fromName} <${campaign.fromEmail || "hello@senlo.io"}>`
       : campaign.fromEmail || "hello@senlo.io";
 
-    const job = await emailQueue.add(`triggered-${campaign.id}-${to}-${Date.now()}`, {
-      campaignId: campaign.id,
-      contactId: null,
-      email: to,
-      from: fromAddress,
-      subject: campaign.subject || template.subject,
-      html: personalizedHtml,
-      providerId: project.providerId,
-      replyTo: campaign.replyTo || undefined,
-    });
+    const job = await emailQueue.add(
+      `triggered-${campaign.id}-${to}-${Date.now()}`,
+      {
+        campaignId: campaign.id,
+        contactId: null,
+        email: to,
+        from: fromAddress,
+        subject: campaign.subject || template.subject,
+        html: personalizedHtml,
+        providerId: project.providerId,
+        replyTo: campaign.replyTo || undefined,
+      },
+    );
 
     const workers = await emailQueue.getWorkers();
     if (workers.length === 0) {
-      logger.warn("Triggered email added to queue but NO active workers found.", {
-        campaignId: campaign.id,
-        to,
-      });
+      logger.warn(
+        "Triggered email added to queue but NO active workers found.",
+        {
+          campaignId: campaign.id,
+          to,
+        },
+      );
     }
 
     logger.info("Triggered email queued successfully", {
@@ -168,13 +192,12 @@ export async function POST(req: NextRequest) {
     logger.error("Triggered email API error", {
       error: errorMessage,
       stack: errorStack,
-      campaignId:
-        typeof body?.campaignId === "number" ? body.campaignId : undefined,
+      campaignId: body?.id || body?.campaignId,
       email: body?.to,
     });
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

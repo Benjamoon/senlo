@@ -67,6 +67,7 @@ export async function createTemplate(
   return withErrorHandling(async () => {
     const name = String(formData.get("name") || "").trim();
     const subject = String(formData.get("subject") || "").trim();
+    const locale = String(formData.get("locale") || "en").trim();
     const numericProjectId = parseInt(projectId, 10);
 
     await getAuthorizedProject(numericProjectId);
@@ -75,7 +76,11 @@ export async function createTemplate(
       throw new Error("Name and subject required");
     }
 
-    logger.debug("Creating template", { projectId: numericProjectId, name });
+    logger.debug("Creating template", {
+      projectId: numericProjectId,
+      name,
+      locale,
+    });
 
     const template = await templateRepo.create({
       projectId: numericProjectId,
@@ -83,6 +88,7 @@ export async function createTemplate(
       subject,
       html: "<p>Empty template</p>",
       designJson: EMPTY_EMAIL_DESIGN,
+      locale,
     });
 
     revalidatePath(`/projects/${projectId}`);

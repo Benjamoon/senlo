@@ -103,6 +103,8 @@ export interface EditorState {
   templateName: string;
   /** Email subject line for the template */
   templateSubject: string;
+  /** Locale of the template (e.g. 'en', 'ru') */
+  templateLocale: string;
   /** Custom merge tags available in the template */
   customMergeTags: MergeTag[];
   /** Whether the design has unsaved changes */
@@ -150,7 +152,7 @@ export interface EditorState {
     id: number,
     design: EmailDesignDocument,
     html: string,
-    metadata?: { name: string; subject: string },
+    metadata?: { name: string; subject: string; locale?: string },
   ) => Promise<any>;
   /** Callback function for sending test emails */
   onSendTest?: (
@@ -180,7 +182,7 @@ export interface EditorState {
   /** Set the project database ID and AI provider status */
   setProjectInfo: (projectId: number, hasAiProvider: boolean) => void;
   /** Update template name and subject line */
-  setTemplateMetadata: (name: string, subject: string) => void;
+  setTemplateMetadata: (name: string, subject: string, locale?: string) => void;
   /** Update available custom merge tags */
   setCustomMergeTags: (tags: MergeTag[]) => void;
   /** Reset design to empty state */
@@ -368,6 +370,7 @@ export const useEditorStore = create<EditorState>()(
 
     templateName: "",
     templateSubject: "",
+    templateLocale: "en",
 
     previewMode: false,
     previewContact: {
@@ -392,10 +395,11 @@ export const useEditorStore = create<EditorState>()(
       });
     },
 
-    setTemplateMetadata: (name, subject) => {
+    setTemplateMetadata: (name, subject, locale) => {
       set((s) => {
         s.templateName = name;
         s.templateSubject = subject;
+        if (locale) s.templateLocale = locale;
       });
     },
 

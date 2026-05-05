@@ -23,11 +23,11 @@ export default function CampaignError({
 
             <div className="space-y-2">
               <h1 className="text-2xl font-bold text-gray-900">
-                Failed to load email
+                Failed to load trigger
               </h1>
               <p className="text-gray-600">
-                We could not load this transactional email. It may have been deleted or you
-                may not have access.
+                We could not load this email trigger. It may have been deleted
+                or you may not have access.
               </p>
             </div>
 
@@ -42,7 +42,7 @@ export default function CampaignError({
                 href="/triggers"
                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
               >
-                Back to Transactional
+                Back to Triggers
               </Link>
             </div>
           </div>

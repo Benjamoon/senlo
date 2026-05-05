@@ -19,11 +19,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Senlo — Open-Source Transactional Email Infrastructure",
+  title: "Senlo — Open-Source Email Trigger Infrastructure",
   description:
-    "A modern, self-hosted alternative to Postmark and Resend. Open-source transactional email infrastructure with a visual MJML editor.",
+    "A modern, self-hosted alternative to Postmark and Resend. Open-source email trigger infrastructure with a visual MJML editor.",
   keywords: [
-    "transactional email infrastructure",
+    "email triggers",
+    "email infrastructure",
     "email builder",
     "email templates",
     "postmark alternative",
@@ -50,24 +51,24 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "/",
-    title: "Senlo — Open-Source Transactional Email Infrastructure",
+    title: "Senlo — Open-Source Email Trigger Infrastructure",
     description:
-      "A modern, self-hosted alternative to Postmark and Resend. Open-source transactional email infrastructure with a visual MJML editor.",
+      "A modern, self-hosted alternative to Postmark and Resend. Open-source email trigger infrastructure with a visual MJML editor.",
     siteName: "Senlo",
     images: [
       {
         url: "/logo-preview.png",
         width: 1200,
         height: 630,
-        alt: "Senlo — Transactional Email Infrastructure",
+        alt: "Senlo — Email Trigger Infrastructure",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Senlo — Open-Source Transactional Email Infrastructure",
+    title: "Senlo — Open-Source Email Trigger Infrastructure",
     description:
-      "A modern, self-hosted alternative to Postmark and Resend. Open-source transactional email infrastructure with a visual MJML editor.",
+      "A modern, self-hosted alternative to Postmark and Resend. Open-source email trigger infrastructure with a visual MJML editor.",
     images: ["/logo-preview.png"],
   },
   robots: {
