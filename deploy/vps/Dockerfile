@@ -30,6 +30,7 @@ FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV CI=true
 
 # Create a non-privileged user
 RUN groupadd --system --gid 1001 nodejs && \
