@@ -2,7 +2,7 @@
 FROM node:20-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
+RUN corepack enable
 
 # 2. Builder stage
 FROM base AS builder
