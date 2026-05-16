@@ -307,6 +307,7 @@ export const triggeredSendLogs = pgTable("triggered_send_logs", {
     .references(() => campaigns.id, { onDelete: "cascade" }),
   email: text("email").notNull(),
   status: text("status").notNull(), // 'SUCCESS', 'FAILED'
+  providerMessageId: text("provider_message_id"),
   error: text("error"),
   data: jsonb("data"), // payload received in webhook
   sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),

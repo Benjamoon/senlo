@@ -234,7 +234,7 @@ export async function createCampaignAction(formData: FormData) {
 
 export async function updateCampaignAction(id: number, formData: FormData) {
   try {
-    const { campaign } = await getAuthorizedCampaign(id);
+    await getAuthorizedCampaign(id);
 
     const parsed = UpdateCampaignSchema.safeParse(Object.fromEntries(formData));
 
@@ -372,6 +372,7 @@ export async function sendCampaignAction(
           : campaign.fromEmail || "hello@senlo.io";
 
         return emailQueue.add(`campaign-${id}-${contact.id}-${Date.now()}`, {
+          projectId: project.id,
           campaignId: id,
           contactId: contact.id,
           email: contact.email,

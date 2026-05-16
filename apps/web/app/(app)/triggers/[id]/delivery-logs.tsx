@@ -32,10 +32,12 @@ const eventIcons: Record<string, React.ReactNode> = {
 
 export function DeliveryLogs({ events }: DeliveryLogsProps) {
   const eventTypes: CampaignEventType[] = Array.from(
-    new Set(events.map((e) => e.type))
+    new Set(events.map((e) => e.type)),
   ).sort();
   const [selectedType, setSelectedType] = useState<CampaignEventType>(
-    eventTypes[0] as CampaignEventType
+    (eventTypes.includes("DELIVERED")
+      ? "DELIVERED"
+      : eventTypes[0]) as CampaignEventType,
   );
   const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -68,13 +70,16 @@ export function DeliveryLogs({ events }: DeliveryLogsProps) {
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const paginatedEvents = filteredEvents.slice(startIndex, endIndex);
 
-  const groupedEvents = paginatedEvents.reduce((acc, event) => {
-    if (!acc[event.type]) {
-      acc[event.type] = [];
-    }
-    acc[event.type].push(event);
-    return acc;
-  }, {} as Record<string, CampaignEvent[]>);
+  const groupedEvents = paginatedEvents.reduce(
+    (acc, event) => {
+      if (!acc[event.type]) {
+        acc[event.type] = [];
+      }
+      acc[event.type].push(event);
+      return acc;
+    },
+    {} as Record<string, CampaignEvent[]>,
+  );
 
   const sortedTypes = Object.keys(groupedEvents).sort();
 
@@ -186,7 +191,7 @@ export function DeliveryLogs({ events }: DeliveryLogsProps) {
                                     >
                                       {key}: {String(value)}
                                     </Badge>
-                                  )
+                                  ),
                                 )}
                               </div>
                             )}

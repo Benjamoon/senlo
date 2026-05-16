@@ -25,7 +25,8 @@ export class TriggeredSendLogRepository extends BaseRepository<
       id: row.id,
       campaignId: row.campaignId,
       email: row.email,
-      status: row.status as "SUCCESS" | "FAILED",
+      status: row.status as "SUCCESS" | "FAILED" | "BOUNCED" | "COMPLAINED" | "DELIVERED",
+      providerMessageId: row.providerMessageId,
       error: row.error,
       data: row.data as Record<string, any> | null,
       sentAt: row.sentAt,
@@ -68,5 +69,37 @@ export class TriggeredSendLogRepository extends BaseRepository<
       .returning();
 
     return this.mapToEntity(row);
+  }
+
+  /**
+   * Update a log entry by ID.
+   */
+  async update(
+    id: number,
+    data: Partial<Omit<TriggeredSendLog, "id" | "sentAt">>
+  ): Promise<TriggeredSendLog | null> {
+    const [row] = await db
+      .update(triggeredSendLogs)
+      .set({
+        ...data,
+      })
+      .where(eq(triggeredSendLogs.id, id))
+      .returning();
+
+    return row ? this.mapToEntity(row) : null;
+  }
+
+  /**
+   * Find a log entry by provider message ID.
+   */
+  async findByProviderMessageId(
+    providerMessageId: string
+  ): Promise<TriggeredSendLog | null> {
+    const [row] = await db
+      .select()
+      .from(triggeredSendLogs)
+      .where(eq(triggeredSendLogs.providerMessageId, providerMessageId));
+
+    return row ? this.mapToEntity(row) : null;
   }
 }

@@ -125,7 +125,8 @@ export interface TriggeredSendLog {
   id: number;
   campaignId: number;
   email: string;
-  status: "SUCCESS" | "FAILED";
+  status: "SUCCESS" | "FAILED" | "BOUNCED" | "COMPLAINED" | "DELIVERED";
+  providerMessageId?: string | null;
   error?: string | null;
   data?: Record<string, any> | null;
   sentAt: Date;

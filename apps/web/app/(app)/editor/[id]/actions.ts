@@ -107,6 +107,7 @@ export async function sendTestEmailAction(
     });
 
     const job = await emailQueue.add(`test-email-${templateId}-${Date.now()}`, {
+      projectId: project.id,
       campaignId: 0, // 0 for test emails
       contactId: 0, // 0 for test emails
       email: targetEmail,

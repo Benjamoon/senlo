@@ -1,10 +1,15 @@
-import { CampaignRepository, EmailProviderRepository } from "@senlo/db";
+import {
+  CampaignRepository,
+  EmailProviderRepository,
+  TriggeredSendLogRepository,
+} from "@senlo/db";
 import { EmailWorkerProcessor, createEmailWorker } from "@senlo/core/src/queue";
 
 const campaignRepo = new CampaignRepository();
 const providerRepo = new EmailProviderRepository();
+const logRepo = new TriggeredSendLogRepository();
 
-const processor = new EmailWorkerProcessor(campaignRepo, providerRepo);
+const processor = new EmailWorkerProcessor(campaignRepo, providerRepo, logRepo);
 
 console.log("🚀 Starting Senlo Email Worker...");
 

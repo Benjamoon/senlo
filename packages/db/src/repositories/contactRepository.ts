@@ -167,6 +167,21 @@ export class ContactRepository extends BaseRepository<
   }
 
   /**
+   * Mark a contact as unsubscribed by email and project.
+   * @param projectId - The project ID
+   * @param email - The email address
+   */
+  async unsubscribeByEmail(projectId: number, email: string): Promise<void> {
+    await db
+      .update(contacts)
+      .set({
+        unsubscribed: true,
+        unsubscribedAt: new Date(),
+      })
+      .where(and(eq(contacts.projectId, projectId), eq(contacts.email, email)));
+  }
+
+  /**
    * Mark a contact as unsubscribed.
    * @param id - The contact ID
    */

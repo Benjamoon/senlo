@@ -5,6 +5,7 @@ import {
   createProviderAction,
   deleteProviderAction,
   toggleProviderAction,
+  updateProviderAction,
   type CreateProviderError,
 } from "../app/(app)/providers/actions";
 import { queryKeys } from "../providers";
@@ -54,6 +55,42 @@ export function useCreateProvider() {
     },
     onSuccess: (provider) => {
       logger.info("Provider created successfully", { providerId: provider.id });
+    },
+    onSettled: () => {
+      // Invalidate providers list to refresh UI
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.emailProviders.lists(),
+      });
+    },
+  });
+}
+
+/**
+ * Hook for updating an existing email provider
+ */
+export function useUpdateProvider() {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    EmailProvider,
+    CreateProviderError,
+    { id: number; formData: FormData }
+  >({
+    mutationFn: async ({ id, formData }) => {
+      const result = await updateProviderAction(id, formData);
+      if ("error" in result) {
+        throw result;
+      }
+      return result.data;
+    },
+    onError: (err, { id }) => {
+      logger.error("Failed to update provider", {
+        providerId: id,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    },
+    onSuccess: (provider) => {
+      logger.info("Provider updated successfully", { providerId: provider.id });
     },
     onSettled: () => {
       // Invalidate providers list to refresh UI

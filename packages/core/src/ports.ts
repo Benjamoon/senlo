@@ -5,6 +5,7 @@ import type {
   Campaign,
   CampaignEvent,
   EmailProvider,
+  TriggeredSendLog,
 } from "./domain";
 import type { EmailTemplate } from "./emailTemplate";
 
@@ -18,6 +19,7 @@ export interface SendMailOptions {
   subject: string;
   html: string;
   replyTo?: string;
+  tags?: Record<string, string>;
 }
 
 export interface SendMailResult {
@@ -86,7 +88,7 @@ export interface RecipientListRepository {
 
 export interface ICampaignRepository {
   create(
-    data: Omit<Campaign, "id" | "createdAt" | "updatedAt">
+    data: Omit<Campaign, "id" | "createdAt" | "updatedAt">,
   ): Promise<Campaign>;
   findById(id: number): Promise<Campaign | null>;
   findByProject(projectId: number): Promise<Campaign[]>;
@@ -94,12 +96,22 @@ export interface ICampaignRepository {
     id: number,
     data: Partial<
       Omit<Campaign, "id" | "projectId" | "createdAt" | "updatedAt">
-    >
+    >,
   ): Promise<Campaign | null>;
   delete(id: number): Promise<void>;
 
   logEvent(
-    data: Omit<CampaignEvent, "id" | "occurredAt">
+    data: Omit<CampaignEvent, "id" | "occurredAt">,
   ): Promise<CampaignEvent>;
   getEventsByCampaign(campaignId: number): Promise<CampaignEvent[]>;
+}
+
+export interface ITriggeredSendLogRepository {
+  update(
+    id: number,
+    data: Partial<Omit<TriggeredSendLog, "id" | "sentAt">>,
+  ): Promise<TriggeredSendLog | null>;
+  findByProviderMessageId(
+    providerMessageId: string,
+  ): Promise<TriggeredSendLog | null>;
 }

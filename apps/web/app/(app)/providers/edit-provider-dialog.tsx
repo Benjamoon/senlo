@@ -12,83 +12,90 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@senlo/ui";
-import { Plus } from "lucide-react";
-import { useCreateProvider } from "apps/web/queries/providers";
-import type { EmailProviderType } from "@senlo/core";
+import { Pencil } from "lucide-react";
+import { useUpdateProvider } from "apps/web/queries/providers";
+import type { EmailProvider, EmailProviderType } from "@senlo/core";
 import { CreateProviderError } from "./actions";
 
-export function AddProviderDialog() {
+interface EditProviderDialogProps {
+  provider: EmailProvider;
+}
+
+export function EditProviderDialog({ provider }: EditProviderDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [type, setType] = useState<EmailProviderType>("RESEND");
-  const { mutate: createProvider } = useCreateProvider();
+  const [type, setType] = useState<EmailProviderType>(provider.type);
+  const { mutate: updateProvider } = useUpdateProvider();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const formData = new FormData(form);
 
-    createProvider(formData, {
-      onSuccess: () => {
-        setIsOpen(false);
-        setType("RESEND");
-        form.reset();
-      },
-      onError: (error: CreateProviderError) => {
-        // Handle field errors from the server action
-        const fieldErrors = error.error?.fieldErrors;
-        let errorMessage = "Validation failed";
+    updateProvider(
+      { id: provider.id, formData },
+      {
+        onSuccess: () => {
+          setIsOpen(false);
+        },
+        onError: (error: CreateProviderError) => {
+          const fieldErrors = error.error?.fieldErrors;
+          let errorMessage = "Validation failed";
 
-        if (fieldErrors) {
-          if ("name" in fieldErrors && fieldErrors.name?.[0]) {
-            errorMessage = fieldErrors.name[0];
-          } else if ("type" in fieldErrors && fieldErrors.type?.[0]) {
-            errorMessage = fieldErrors.type[0];
-          } else if ("apiKey" in fieldErrors && fieldErrors.apiKey?.[0]) {
-            errorMessage = fieldErrors.apiKey[0];
-          } else if (
-            "webhookSecret" in fieldErrors &&
-            fieldErrors.webhookSecret?.[0]
-          ) {
-            errorMessage = fieldErrors.webhookSecret[0];
-          } else if ("domain" in fieldErrors && fieldErrors.domain?.[0]) {
-            errorMessage = fieldErrors.domain[0];
-          } else if (
-            "accessKeyId" in fieldErrors &&
-            fieldErrors.accessKeyId?.[0]
-          ) {
-            errorMessage = fieldErrors.accessKeyId[0];
-          } else if (
-            "secretAccessKey" in fieldErrors &&
-            fieldErrors.secretAccessKey?.[0]
-          ) {
-            errorMessage = fieldErrors.secretAccessKey[0];
-          } else if ("general" in fieldErrors && fieldErrors.general?.[0]) {
-            errorMessage = fieldErrors.general[0];
+          if (fieldErrors) {
+            if ("name" in fieldErrors && fieldErrors.name?.[0]) {
+              errorMessage = fieldErrors.name[0];
+            } else if ("type" in fieldErrors && fieldErrors.type?.[0]) {
+              errorMessage = fieldErrors.type[0];
+            } else if ("apiKey" in fieldErrors && fieldErrors.apiKey?.[0]) {
+              errorMessage = fieldErrors.apiKey[0];
+            } else if (
+              "webhookSecret" in fieldErrors &&
+              fieldErrors.webhookSecret?.[0]
+            ) {
+              errorMessage = fieldErrors.webhookSecret[0];
+            } else if ("domain" in fieldErrors && fieldErrors.domain?.[0]) {
+              errorMessage = fieldErrors.domain[0];
+            } else if (
+              "accessKeyId" in fieldErrors &&
+              fieldErrors.accessKeyId?.[0]
+            ) {
+              errorMessage = fieldErrors.accessKeyId[0];
+            } else if (
+              "secretAccessKey" in fieldErrors &&
+              fieldErrors.secretAccessKey?.[0]
+            ) {
+              errorMessage = fieldErrors.secretAccessKey[0];
+            } else if ("general" in fieldErrors && fieldErrors.general?.[0]) {
+              errorMessage = fieldErrors.general[0];
+            }
           }
-        }
 
-        alert(`Error: ${errorMessage}`);
+          alert(`Error: ${errorMessage}`);
+        },
       },
-    });
+    );
   };
 
   const handleClose = () => {
     setIsOpen(false);
-    setType("RESEND");
+    setType(provider.type);
   };
 
   return (
     <>
-      <Button onClick={() => setIsOpen(true)}>
-        <Plus size={16} />
-        Add Provider
-      </Button>
+      <button
+        onClick={() => setIsOpen(true)}
+        className="text-zinc-400 hover:text-zinc-600 transition-colors cursor-pointer"
+        title="Edit settings"
+      >
+        <Pencil size={18} />
+      </button>
 
       <Dialog
         isOpen={isOpen}
         onClose={handleClose}
-        title="Add Email Provider"
-        description="Configure a new email sending provider."
+        title="Edit Email Provider"
+        description="Update your email provider configuration."
       >
         <form onSubmit={handleSubmit} className="space-y-4">
           <FormField
@@ -98,9 +105,8 @@ export function AddProviderDialog() {
           >
             <Input
               name="name"
-              placeholder={
-                type === "MAILGUN" ? "My Mailgun Account" : "My Resend Account"
-              }
+              defaultValue={provider.name}
+              placeholder="My Account"
               required
               autoFocus
             />
@@ -125,16 +131,11 @@ export function AddProviderDialog() {
 
           {type === "RESEND" && (
             <>
-              <FormField
-                label="API Key"
-                required
-                hint="Your Resend API Key (re_...)"
-              >
+              <FormField label="API Key" hint="Leave empty to keep current key">
                 <Input
                   name="apiKey"
                   type="password"
-                  placeholder="re_123456789"
-                  required
+                  placeholder="re_••••••••"
                 />
               </FormField>
 
@@ -145,6 +146,9 @@ export function AddProviderDialog() {
                 <Input
                   name="webhookSecret"
                   type="password"
+                  defaultValue={
+                    (provider.config.webhook_secret as string) || ""
+                  }
                   placeholder="whsec_..."
                 />
               </FormField>
@@ -153,16 +157,11 @@ export function AddProviderDialog() {
 
           {type === "MAILGUN" && (
             <>
-              <FormField
-                label="API Key"
-                required
-                hint="Your Mailgun Private API Key"
-              >
+              <FormField label="API Key" hint="Leave empty to keep current key">
                 <Input
                   name="apiKey"
                   type="password"
-                  placeholder="key-xxxxxxxx"
-                  required
+                  placeholder="key-••••••••"
                 />
               </FormField>
 
@@ -171,14 +170,22 @@ export function AddProviderDialog() {
                 required
                 hint="Your verified Mailgun domain"
               >
-                <Input name="domain" placeholder="mg.example.com" required />
+                <Input
+                  name="domain"
+                  defaultValue={(provider.config.domain as string) || ""}
+                  placeholder="mg.example.com"
+                  required
+                />
               </FormField>
 
               <FormField
                 label="Region"
                 hint="Choose based on your Mailgun account region"
               >
-                <Select name="region" defaultValue="US">
+                <Select
+                  name="region"
+                  defaultValue={(provider.config.region as string) || "US"}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Region" />
                   </SelectTrigger>
@@ -195,22 +202,23 @@ export function AddProviderDialog() {
             <>
               <FormField
                 label="Access Key ID"
-                required
-                hint="AWS IAM User Access Key ID"
+                hint="Leave empty to keep current"
               >
-                <Input name="accessKeyId" placeholder="AKIA..." required />
+                <Input
+                  name="accessKeyId"
+                  defaultValue={(provider.config.accessKeyId as string) || ""}
+                  placeholder="AKIA..."
+                />
               </FormField>
 
               <FormField
                 label="Secret Access Key"
-                required
-                hint="AWS IAM User Secret Access Key"
+                hint="Leave empty to keep current"
               >
                 <Input
                   name="secretAccessKey"
                   type="password"
-                  placeholder="xxxxxxxx"
-                  required
+                  placeholder="••••••••"
                 />
               </FormField>
 
@@ -219,7 +227,12 @@ export function AddProviderDialog() {
                 required
                 hint="AWS Region where SES is configured"
               >
-                <Input name="region" placeholder="us-east-1" required />
+                <Input
+                  name="region"
+                  defaultValue={(provider.config.region as string) || ""}
+                  placeholder="us-east-1"
+                  required
+                />
               </FormField>
             </>
           )}
@@ -228,7 +241,7 @@ export function AddProviderDialog() {
             <Button variant="secondary" type="button" onClick={handleClose}>
               Cancel
             </Button>
-            <Button type="submit">Create Provider</Button>
+            <Button type="submit">Save Changes</Button>
           </div>
         </form>
       </Dialog>

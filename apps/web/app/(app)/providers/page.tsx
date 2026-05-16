@@ -11,6 +11,7 @@ import {
 } from "@senlo/ui";
 import { Cloud, Trash2, CheckCircle2, Circle, Bot } from "lucide-react";
 import { AddProviderDialog } from "./add-provider-dialog";
+import { EditProviderDialog } from "./edit-provider-dialog";
 import { AddAiProviderDialog } from "./add-ai-provider-dialog";
 import {
   useProviders,
@@ -176,11 +177,12 @@ export default function ProvidersPage() {
                       >
                         {provider.isActive ? "Active" : "Inactive"}
                       </Badge>
+                      <EditProviderDialog provider={provider} />
                       <button
                         onClick={() => handleDelete(provider.id)}
-                        className="text-zinc-400 hover:text-red-600 transition-colors"
+                        className="text-zinc-400 hover:text-red-600 transition-colors cursor-pointer"
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={18} />
                       </button>
                     </div>
                   </div>

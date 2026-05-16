@@ -141,11 +141,21 @@ export async function POST(req: NextRequest) {
       ? `${campaign.fromName} <${campaign.fromEmail || "hello@senlo.io"}>`
       : campaign.fromEmail || "hello@senlo.io";
 
+    const log = await logRepo.create({
+      campaignId: campaign.id,
+      email: to,
+      status: "SUCCESS",
+      error: null,
+      data: data,
+    });
+
     const job = await emailQueue.add(
       `triggered-${campaign.id}-${to}-${Date.now()}`,
       {
+        projectId: project.id,
         campaignId: campaign.id,
         contactId: null,
+        logId: log.id,
         email: to,
         from: fromAddress,
         subject: campaign.subject || template.subject,
@@ -155,30 +165,10 @@ export async function POST(req: NextRequest) {
       },
     );
 
-    const workers = await emailQueue.getWorkers();
-    if (workers.length === 0) {
-      logger.warn(
-        "Triggered email added to queue but NO active workers found.",
-        {
-          campaignId: campaign.id,
-          to,
-        },
-      );
-    }
-
     logger.info("Triggered email queued successfully", {
       jobId: job.id,
       campaignId: campaign.id,
       to,
-      activeWorkers: workers.length,
-    });
-
-    await logRepo.create({
-      campaignId: campaign.id,
-      email: to,
-      status: "SUCCESS",
-      error: null,
-      data: data,
     });
 
     return NextResponse.json({

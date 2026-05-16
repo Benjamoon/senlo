@@ -1,18 +1,33 @@
 import { Worker, Job } from "bullmq";
 import { redis } from "../redis";
 import type { EmailJobData, CampaignJobData } from "./types";
-import { ICampaignRepository, IEmailProviderRepository } from "../ports";
+import {
+  ICampaignRepository,
+  IEmailProviderRepository,
+  ITriggeredSendLogRepository,
+} from "../ports";
 import { MailerFactory } from "../services/mail";
 
 export class EmailWorkerProcessor {
   constructor(
     private readonly campaignRepo: ICampaignRepository,
-    private readonly providerRepo: IEmailProviderRepository
+    private readonly providerRepo: IEmailProviderRepository,
+    private readonly logRepo?: ITriggeredSendLogRepository,
   ) {}
 
   async processEmailJob(job: Job<EmailJobData>) {
-    const { campaignId, contactId, email, from, subject, html, providerId, replyTo } =
-      job.data;
+    const {
+      projectId,
+      campaignId,
+      contactId,
+      logId,
+      email,
+      from,
+      subject,
+      html,
+      providerId,
+      replyTo,
+    } = job.data;
 
     try {
       const provider = await this.providerRepo.findById(providerId);
@@ -26,10 +41,23 @@ export class EmailWorkerProcessor {
         subject,
         html,
         replyTo,
+        tags: {
+          project_id: String(projectId),
+          campaign_id: String(campaignId),
+          contact_id: contactId ? String(contactId) : "0",
+        },
       });
 
       if (!result.success) {
         throw new Error(result.error || "Failed to send email");
+      }
+
+      // Update log with provider message ID if it's a triggered send
+      if (logId && this.logRepo) {
+        await this.logRepo.update(logId, {
+          providerMessageId: result.messageId,
+          status: "SUCCESS",
+        });
       }
 
       if (campaignId !== 0) {
@@ -88,6 +116,6 @@ export function createEmailWorker(processor: EmailWorkerProcessor) {
     },
     {
       connection: redis as any, // Cast to any to resolve version mismatch between BullMQ and ioredis
-    }
+    },
   );
 }

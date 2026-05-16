@@ -11,7 +11,9 @@ export const authConfig = {
         nextUrl.pathname.startsWith("/login") ||
         nextUrl.pathname.startsWith("/register");
       const isPublicRoute =
-        nextUrl.pathname === "/" || nextUrl.pathname.startsWith("/api/track/");
+        nextUrl.pathname === "/" ||
+        nextUrl.pathname.startsWith("/api/track/") ||
+        nextUrl.pathname.startsWith("/api/webhooks/");
 
       // 1. Allow API routes with Authorization header (API Keys)
       const isApiRoute =
@@ -47,4 +49,3 @@ export const authConfig = {
   },
   providers: [], // Add providers with an empty array for now
 } satisfies NextAuthConfig;
-

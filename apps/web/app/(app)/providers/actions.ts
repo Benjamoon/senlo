@@ -5,7 +5,7 @@ import { EmailProviderRepository } from "@senlo/db";
 import { EmailProvider, EmailProviderType } from "@senlo/core";
 import { ActionResult, withErrorHandling } from "apps/web/lib/errors";
 import { logger } from "apps/web/lib/logger";
-import { CreateProviderSchema } from "./schemas";
+import { CreateProviderSchema, UpdateProviderSchema } from "./schemas";
 import { auth } from "apps/web/auth";
 
 const providerRepo = new EmailProviderRepository();
@@ -17,6 +17,7 @@ export type CreateProviderError = {
       name?: string[];
       type?: string[];
       apiKey?: string[];
+      webhookSecret?: string[];
       domain?: string[];
       region?: string[];
       accessKeyId?: string[];
@@ -29,6 +30,8 @@ export type CreateProviderError = {
 export type CreateProviderResult =
   | { success: true; data: EmailProvider }
   | CreateProviderError;
+
+export type UpdateProviderResult = CreateProviderResult;
 
 export async function listProviders(): Promise<ActionResult<EmailProvider[]>> {
   const session = await auth();
@@ -63,8 +66,16 @@ export async function createProviderAction(
     };
   }
 
-  const { name, type, apiKey, domain, region, accessKeyId, secretAccessKey } =
-    parsed.data;
+  const {
+    name,
+    type,
+    apiKey,
+    webhookSecret,
+    domain,
+    region,
+    accessKeyId,
+    secretAccessKey,
+  } = parsed.data;
 
   try {
     let config: Record<string, string> = {};
@@ -78,7 +89,7 @@ export async function createProviderAction(
           },
         };
       }
-      config = { apiKey };
+      config = { apiKey, webhook_secret: webhookSecret || "" };
     } else if (type === "MAILGUN") {
       if (!apiKey || !domain) {
         return {
@@ -186,4 +197,88 @@ export async function toggleProviderAction(
     revalidatePath("/providers");
     return updatedProvider;
   });
+}
+
+export async function updateProviderAction(
+  id: number,
+  formData: FormData,
+): Promise<UpdateProviderResult> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: { formErrors: ["Unauthorized"], fieldErrors: {} } };
+  }
+
+  const provider = await providerRepo.findById(id);
+  if (!provider || provider.userId !== session.user.id) {
+    return { error: { formErrors: ["Provider not found"], fieldErrors: {} } };
+  }
+
+  const parsed = UpdateProviderSchema.safeParse(Object.fromEntries(formData));
+
+  if (!parsed.success) {
+    return {
+      error: parsed.error.flatten(),
+    };
+  }
+
+  const {
+    name,
+    type,
+    apiKey,
+    webhookSecret,
+    domain,
+    region,
+    accessKeyId,
+    secretAccessKey,
+  } = parsed.data;
+
+  try {
+    const updatedConfig = { ...provider.config };
+
+    if (name) provider.name = name;
+    if (type) provider.type = type as EmailProviderType;
+
+    if (type === "RESEND" || provider.type === "RESEND") {
+      if (apiKey) updatedConfig.apiKey = apiKey;
+      if (webhookSecret !== undefined)
+        updatedConfig.webhook_secret = webhookSecret;
+    } else if (type === "MAILGUN" || provider.type === "MAILGUN") {
+      if (apiKey) updatedConfig.apiKey = apiKey;
+      if (domain) updatedConfig.domain = domain;
+      if (region) updatedConfig.region = region;
+    } else if (type === "SES" || provider.type === "SES") {
+      if (accessKeyId) updatedConfig.accessKeyId = accessKeyId;
+      if (secretAccessKey) updatedConfig.secretAccessKey = secretAccessKey;
+      if (region) updatedConfig.region = region;
+    }
+
+    const updatedProvider = await providerRepo.update(id, {
+      name: name || provider.name,
+      type: (type as EmailProviderType) || provider.type,
+      config: updatedConfig,
+    });
+
+    if (!updatedProvider) {
+      throw new Error("Failed to update provider");
+    }
+
+    revalidatePath("/providers");
+
+    logger.info("Email provider updated successfully", {
+      providerId: updatedProvider.id,
+    });
+
+    return { success: true, data: updatedProvider };
+  } catch (error) {
+    logger.error("Failed to update provider", {
+      error: error instanceof Error ? error.message : String(error),
+      providerId: id,
+    });
+    return {
+      error: {
+        formErrors: [],
+        fieldErrors: { general: ["Failed to update provider"] },
+      },
+    };
+  }
 }

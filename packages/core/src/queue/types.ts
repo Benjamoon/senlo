@@ -1,6 +1,8 @@
 export type EmailJobData = {
+  projectId: number;
   campaignId: number;
   contactId: number | null;
+  logId?: number | null;
   email: string;
   from: string;
   subject: string;

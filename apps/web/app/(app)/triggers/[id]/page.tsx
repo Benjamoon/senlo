@@ -17,6 +17,7 @@ import {
   Terminal,
   ArrowLeft,
   BarChart3,
+  CheckCircle2,
 } from "lucide-react";
 import Link from "next/link";
 import { DeliveryLogs } from "./delivery-logs";
@@ -49,8 +50,10 @@ export default async function CampaignDetailsPage({
   };
 
   const stats = {
-    sent: triggeredLogs.filter((l) => l.status === "SUCCESS").length,
-    delivered: triggeredLogs.filter((l) => l.status === "SUCCESS").length,
+    sent: triggeredLogs.filter((l) =>
+      ["SUCCESS", "DELIVERED", "BOUNCED", "COMPLAINED"].includes(l.status),
+    ).length,
+    delivered: triggeredLogs.filter((l) => l.status === "DELIVERED").length,
     uniqueOpens: getUniqueCount("OPEN"),
     totalOpens: events.filter((e) => e.type === "OPEN").length,
     uniqueClicks: getUniqueCount("CLICK"),
@@ -99,7 +102,7 @@ export default async function CampaignDetailsPage({
         }
       />
 
-      <Tabs defaultValue="general" className="w-full">
+      <Tabs defaultValue="delivery" className="w-full">
         <TabsList className="mb-8">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="delivery">Delivery Logs</TabsTrigger>
@@ -114,6 +117,11 @@ export default async function CampaignDetailsPage({
                     label: "Sent",
                     value: stats.sent,
                     icon: <Send size={16} />,
+                  },
+                  {
+                    label: "Delivered",
+                    value: stats.delivered,
+                    icon: <CheckCircle2 size={16} className="text-green-500" />,
                   },
                   {
                     label: "Errors",
