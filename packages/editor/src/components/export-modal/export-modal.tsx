@@ -19,9 +19,10 @@ export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
 
   const handleCopy = async (type: "html" | "mjml") => {
     const options = { baseUrl: window.location.origin };
-    const content = type === "html" 
-      ? renderEmailDesign(design, options) 
-      : renderEmailDesignMJML(design, options);
+    const content =
+      type === "html"
+        ? renderEmailDesign(design, options)
+        : renderEmailDesignMJML(design, options);
 
     try {
       await navigator.clipboard.writeText(content);
@@ -36,6 +37,7 @@ export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
+      disableAnimation={true}
       title="Get the code"
       description="Export your email design as HTML or MJML code."
     >
@@ -49,7 +51,10 @@ export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
             <span className={styles.label}>HTML code</span>
           </div>
           <button
-            className={cn(styles.copyButton, copiedType === "html" && styles.copied)}
+            className={cn(
+              styles.copyButton,
+              copiedType === "html" && styles.copied,
+            )}
             onClick={() => handleCopy("html")}
             title="Copy HTML to clipboard"
           >
@@ -66,7 +71,10 @@ export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
             <span className={styles.label}>MJML code</span>
           </div>
           <button
-            className={cn(styles.copyButton, copiedType === "mjml" && styles.copied)}
+            className={cn(
+              styles.copyButton,
+              copiedType === "mjml" && styles.copied,
+            )}
             onClick={() => handleCopy("mjml")}
             title="Copy MJML to clipboard"
           >
@@ -77,11 +85,3 @@ export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
     </Dialog>
   );
 };
-
-
-
-
-
-
-
-

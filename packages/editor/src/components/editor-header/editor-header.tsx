@@ -1,7 +1,17 @@
 "use client";
 
 import styles from "./editor-header.module.css";
-import { ArrowLeft, Undo2, Redo2, Download, Save, Eye, Settings2, Variable, Send } from "lucide-react";
+import {
+  ArrowLeft,
+  Undo2,
+  Redo2,
+  Download,
+  Save,
+  Eye,
+  Settings2,
+  Variable,
+  Send,
+} from "lucide-react";
 import { useEditorStore } from "../../state/editor.store";
 import { renderEmailDesign } from "@senlo/core";
 import { Button, Dialog, FormField, Input } from "@senlo/ui";
@@ -61,7 +71,7 @@ export const EditorHeader = ({ projectId }: EditorHeaderProps) => {
   const handleBackClick = () => {
     if (isDirty) {
       const confirmLeave = window.confirm(
-        "You have unsaved changes. Are you sure you want to leave?"
+        "You have unsaved changes. Are you sure you want to leave?",
       );
       if (!confirmLeave) return;
     }
@@ -235,11 +245,16 @@ export const EditorHeader = ({ projectId }: EditorHeaderProps) => {
       <Dialog
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
+        disableAnimation={true}
         title="Template Info"
         description="Update the template name and email subject line."
       >
         <form onSubmit={handleSettingsSave} className="space-y-4">
-          <FormField label="Template Name" required hint="Internal name for this template">
+          <FormField
+            label="Template Name"
+            required
+            hint="Internal name for this template"
+          >
             <Input
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
@@ -248,7 +263,11 @@ export const EditorHeader = ({ projectId }: EditorHeaderProps) => {
             />
           </FormField>
 
-          <FormField label="Email Subject" required hint="The subject line recipients will see">
+          <FormField
+            label="Email Subject"
+            required
+            hint="The subject line recipients will see"
+          >
             <Input
               value={editSubject}
               onChange={(e) => setEditSubject(e.target.value)}
@@ -257,7 +276,11 @@ export const EditorHeader = ({ projectId }: EditorHeaderProps) => {
             />
           </FormField>
 
-          <FormField label="Locale" required hint="Template language (e.g. en, ru, es)">
+          <FormField
+            label="Locale"
+            required
+            hint="Template language (e.g. en, ru, es)"
+          >
             <Input
               value={editLocale}
               onChange={(e) => setEditLocale(e.target.value)}

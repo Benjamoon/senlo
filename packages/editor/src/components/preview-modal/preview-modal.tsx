@@ -22,9 +22,10 @@ export const PreviewModal = ({ isOpen, onClose }: PreviewModalProps) => {
 
   const html = useMemo(() => {
     if (!isOpen) return "";
-    
+
     const options: RenderOptions = {
-      baseUrl: typeof window !== "undefined" ? window.location.origin : undefined,
+      baseUrl:
+        typeof window !== "undefined" ? window.location.origin : undefined,
       data: {
         contact: previewContact || {},
         project: { name: "Sample Project" },
@@ -45,6 +46,7 @@ export const PreviewModal = ({ isOpen, onClose }: PreviewModalProps) => {
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
+      disableAnimation={true}
       title="Email Preview"
       description="See how your email looks on different devices."
       className={styles.dialogOverride}
@@ -57,7 +59,7 @@ export const PreviewModal = ({ isOpen, onClose }: PreviewModalProps) => {
             onChange={(val) => setViewMode(val as ViewMode)}
           />
         </div>
-        
+
         <div className={styles.iframeWrapper}>
           <iframe
             title="Email Preview"
@@ -69,7 +71,3 @@ export const PreviewModal = ({ isOpen, onClose }: PreviewModalProps) => {
     </Dialog>
   );
 };
-
-
-
-

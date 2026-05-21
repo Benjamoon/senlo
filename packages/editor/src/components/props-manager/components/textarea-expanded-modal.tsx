@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { Dialog, Textarea, Button } from "@senlo/ui";
 import { Maximize2 } from "lucide-react";
 import { MergeTagSelector } from "./merge-tag-selector";
@@ -26,6 +25,7 @@ export const TextareaExpandedModal = ({
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
+      disableAnimation={true}
       title={title}
       className="max-w-2xl w-full"
     >
@@ -66,4 +66,3 @@ export const ExpandButton = ({ onClick }: { onClick: () => void }) => (
     </Button>
   </div>
 );
-

@@ -120,6 +120,7 @@ export const SocialsSection = ({ block }: SocialsSectionProps) => {
       <Dialog
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
+        disableAnimation={true}
         title="Add Social Link"
         description="Select a social network to add to your email."
         footer={

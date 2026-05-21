@@ -116,6 +116,7 @@ export const RowViewMenu = ({ rowId }: RowViewMenuProps) => {
       <Dialog
         isOpen={isSaveDialogOpen}
         onClose={() => setIsSaveDialogVisible(false)}
+        disableAnimation={true}
         title="Save Row to Library"
         description="Saved rows can be reused in other templates."
       >

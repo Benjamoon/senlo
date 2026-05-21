@@ -12,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@senlo/ui";
-import { Plus } from "lucide-react";
 import { useCreateAiProvider } from "apps/web/queries/ai-providers";
 import type { AiProviderType } from "@senlo/core";
 
@@ -23,8 +22,15 @@ interface ValidationError {
   };
 }
 
-export function AddAiProviderDialog() {
-  const [isOpen, setIsOpen] = useState(false);
+interface AddAiProviderDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function AddAiProviderDialog({
+  isOpen,
+  onClose,
+}: AddAiProviderDialogProps) {
   const [type, setType] = useState<AiProviderType>("OPENAI");
   const { mutate: createAiProvider } = useCreateAiProvider();
 
@@ -35,7 +41,7 @@ export function AddAiProviderDialog() {
 
     createAiProvider(formData, {
       onSuccess: () => {
-        setIsOpen(false);
+        onClose();
         setType("OPENAI");
         form.reset();
       },
@@ -63,100 +69,98 @@ export function AddAiProviderDialog() {
     });
   };
 
-  const handleClose = () => {
-    setIsOpen(false);
+  const handleInternalClose = () => {
+    onClose();
     setType("OPENAI");
   };
 
   return (
-    <>
-      <Button onClick={() => setIsOpen(true)}>
-        <Plus size={16} />
-        Add AI Provider
-      </Button>
-
-      <Dialog
-        isOpen={isOpen}
-        onClose={handleClose}
-        title="Add AI Provider"
-        description="Configure a new AI model provider for template generation."
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <FormField
-            label="Display Name"
-            required
-            hint="Internal name for this provider"
-          >
-            <Input
-              name="name"
-              placeholder={
-                type === "OPENAI" ? "My OpenAI API Key" : "My Anthropic Key"
-              }
-              required
-              autoFocus
-              autoComplete="off"
-            />
-          </FormField>
-
-          <FormField label="Provider Type" required>
-            <Select
-              name="type"
-              value={type}
-              onValueChange={(val) => setType(val as AiProviderType)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select provider" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="OPENAI">OpenAI</SelectItem>
-                <SelectItem value="ANTHROPIC">Anthropic</SelectItem>
-              </SelectContent>
-            </Select>
-          </FormField>
-
-          <FormField
-            label="API Key"
-            required
-            hint={
-              type === "OPENAI"
-                ? "Your OpenAI API Key (sk-...)"
-                : "Your Anthropic API Key (sk-ant-...)"
+    <Dialog
+      isOpen={isOpen}
+      onClose={handleInternalClose}
+      disableAnimation={true}
+      title="Add AI Provider"
+      description="Configure a new AI model provider for template generation."
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <FormField
+          label="Display Name"
+          required
+          hint="Internal name for this provider"
+        >
+          <Input
+            name="name"
+            placeholder={
+              type === "OPENAI" ? "My OpenAI API Key" : "My Anthropic Key"
             }
-          >
-            <Input
-              name="apiKey"
-              type="password"
-              placeholder="sk-..."
-              required
-              autoComplete="new-password"
-            />
-          </FormField>
+            required
+            autoFocus
+            autoComplete="off"
+          />
+        </FormField>
 
-          <FormField
-            label="Default Model"
-            hint={
-              type === "OPENAI"
-                ? "e.g. gpt-4o, gpt-4-turbo"
-                : "e.g. claude-3-5-sonnet-20240620"
+        <FormField label="Provider Type" required>
+          <Select
+            name="type"
+            value={type}
+            onValueChange={(val) => setType(val as AiProviderType)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select provider" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="OPENAI">OpenAI</SelectItem>
+              <SelectItem value="ANTHROPIC">Anthropic</SelectItem>
+            </SelectContent>
+          </Select>
+        </FormField>
+
+        <FormField
+          label="API Key"
+          required
+          hint={
+            type === "OPENAI"
+              ? "Your OpenAI API Key (sk-...)"
+              : "Your Anthropic API Key (sk-ant-...)"
+          }
+        >
+          <Input
+            name="apiKey"
+            type="password"
+            placeholder="sk-..."
+            required
+            autoComplete="new-password"
+          />
+        </FormField>
+
+        <FormField
+          label="Default Model"
+          hint={
+            type === "OPENAI"
+              ? "e.g. gpt-4o, gpt-4-turbo"
+              : "e.g. claude-3-5-sonnet-20240620"
+          }
+        >
+          <Input
+            name="model"
+            placeholder={
+              type === "OPENAI" ? "gpt-4o" : "claude-3-5-sonnet-20240620"
             }
-          >
-            <Input
-              name="model"
-              placeholder={
-                type === "OPENAI" ? "gpt-4o" : "claude-3-5-sonnet-20240620"
-              }
-              autoComplete="off"
-            />
-          </FormField>
+            autoComplete="off"
+          />
+        </FormField>
 
-          <div className="flex justify-end gap-3 mt-6">
-            <Button variant="secondary" type="button" onClick={handleClose}>
-              Cancel
-            </Button>
-            <Button type="submit">Create Provider</Button>
-          </div>
-        </form>
-      </Dialog>
-    </>
+        <div className="flex justify-end gap-3 mt-6">
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={handleInternalClose}
+          >
+            Cancel
+          </Button>
+          <Button type="submit">Create Provider</Button>
+        </div>
+      </form>
+    </Dialog>
   );
 }

@@ -21,6 +21,8 @@ export interface DialogProps {
   footer?: React.ReactNode;
   /** Additional CSS class for the dialog content */
   className?: string;
+  /** Whether to disable opening animations */
+  disableAnimation?: boolean;
 }
 
 /**
@@ -50,14 +52,26 @@ export interface DialogProps {
  * ```
  */
 export const Dialog = React.forwardRef<HTMLDivElement, DialogProps>(
-  ({ isOpen, onClose, title, description, children, footer, className }, ref) => {
+  (
+    {
+      isOpen,
+      onClose,
+      title,
+      description,
+      children,
+      footer,
+      className,
+      disableAnimation,
+    },
+    ref,
+  ) => {
     const handleEscape = useCallback(
       (e: KeyboardEvent) => {
         if (e.key === "Escape") {
           onClose();
         }
       },
-      [onClose]
+      [onClose],
     );
 
     useEffect(() => {
@@ -79,12 +93,16 @@ export const Dialog = React.forwardRef<HTMLDivElement, DialogProps>(
 
     return createPortal(
       <div
-        className={styles.overlay}
+        className={cn(styles.overlay, disableAnimation && styles.noAnimation)}
         onClick={(e) => e.target === e.currentTarget && onClose()}
       >
         <div
           ref={ref}
-          className={cn(styles.content, className)}
+          className={cn(
+            styles.content,
+            className,
+            disableAnimation && styles.noAnimation,
+          )}
           role="dialog"
           aria-modal="true"
           aria-labelledby={title ? "dialog-title" : undefined}
@@ -119,9 +137,9 @@ export const Dialog = React.forwardRef<HTMLDivElement, DialogProps>(
           {footer && <div className={styles.footer}>{footer}</div>}
         </div>
       </div>,
-      document.body
+      document.body,
     );
-  }
+  },
 );
 
 Dialog.displayName = "Dialog";

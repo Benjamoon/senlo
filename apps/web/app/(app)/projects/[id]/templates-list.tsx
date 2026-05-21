@@ -3,12 +3,10 @@
 import { useState } from "react";
 import { EmailTemplate } from "@senlo/core";
 import { TemplateCard } from "./template-card";
-import { Badge, Button, Card } from "@senlo/ui";
-import { logger } from "apps/web/lib/logger";
+import { Badge, Card } from "@senlo/ui";
 import { Grid2x2, Table2, FileText, Trash2, ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { Dialog } from "@senlo/ui";
-import { useDeleteTemplate } from "apps/web/queries/templates";
+import { useDialogStore } from "apps/web/providers/dialogs/store";
 
 interface TemplatesListProps {
   templates: EmailTemplate[];
@@ -18,39 +16,12 @@ interface TemplatesListProps {
 
 export function TemplatesList({ templates, projectId }: TemplatesListProps) {
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-  const [templateToDelete, setTemplateToDelete] =
-    useState<EmailTemplate | null>(null);
-
-  // Use React Query mutation for deleting templates
-  const { mutate: deleteTemplate, isPending: isDeleting } = useDeleteTemplate();
+  const openDialog = useDialogStore((state) => state.open);
 
   const handleDeleteClick = (e: React.MouseEvent, template: EmailTemplate) => {
     e.preventDefault();
     e.stopPropagation();
-    setTemplateToDelete(template);
-    setIsDeleteOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!templateToDelete) return;
-    
-    deleteTemplate(
-      { projectId: projectId.toString(), templateId: templateToDelete.id },
-      {
-        onSuccess: () => {
-          setIsDeleteOpen(false);
-          setTemplateToDelete(null);
-        },
-        onError: (error) => {
-          logger.error("Failed to delete template", {
-            templateId: templateToDelete.id,
-            projectId: templateToDelete.projectId,
-            error: error instanceof Error ? error.message : String(error),
-          });
-        }
-      }
-    );
+    openDialog("DELETE_TEMPLATE", { template, projectId });
   };
 
   return (
@@ -174,35 +145,6 @@ export function TemplatesList({ templates, projectId }: TemplatesListProps) {
           </table>
         </Card>
       )}
-
-      <Dialog
-        isOpen={isDeleteOpen}
-        onClose={() => setIsDeleteOpen(false)}
-        title="Delete Template"
-        description={`Are you sure you want to delete "${templateToDelete?.name}"? This action cannot be undone.`}
-        footer={
-          <div className="flex justify-end gap-3">
-            <Button
-              variant="secondary"
-              onClick={() => setIsDeleteOpen(false)}
-              disabled={isDeleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={confirmDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? "Deleting..." : "Delete Template"}
-            </Button>
-          </div>
-        }
-      >
-        <p className="text-sm text-zinc-500">
-          The template will be permanently removed from this project.
-        </p>
-      </Dialog>
     </div>
   );
 }

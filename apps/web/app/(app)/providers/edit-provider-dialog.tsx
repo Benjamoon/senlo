@@ -12,17 +12,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@senlo/ui";
-import { Pencil } from "lucide-react";
 import { useUpdateProvider } from "apps/web/queries/providers";
 import type { EmailProvider, EmailProviderType } from "@senlo/core";
 import { CreateProviderError } from "./actions";
 
 interface EditProviderDialogProps {
   provider: EmailProvider;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export function EditProviderDialog({ provider }: EditProviderDialogProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export default function EditProviderDialog({
+  provider,
+  isOpen,
+  onClose,
+}: EditProviderDialogProps) {
   const [type, setType] = useState<EmailProviderType>(provider.type);
   const { mutate: updateProvider } = useUpdateProvider();
 
@@ -35,7 +39,7 @@ export function EditProviderDialog({ provider }: EditProviderDialogProps) {
       { id: provider.id, formData },
       {
         onSuccess: () => {
-          setIsOpen(false);
+          onClose();
         },
         onError: (error: CreateProviderError) => {
           const fieldErrors = error.error?.fieldErrors;
@@ -76,175 +80,157 @@ export function EditProviderDialog({ provider }: EditProviderDialogProps) {
     );
   };
 
-  const handleClose = () => {
-    setIsOpen(false);
+  const handleInternalClose = () => {
+    onClose();
     setType(provider.type);
   };
 
   return (
-    <>
-      <button
-        onClick={() => setIsOpen(true)}
-        className="text-zinc-400 hover:text-zinc-600 transition-colors cursor-pointer"
-        title="Edit settings"
-      >
-        <Pencil size={18} />
-      </button>
-
-      <Dialog
-        isOpen={isOpen}
-        onClose={handleClose}
-        title="Edit Email Provider"
-        description="Update your email provider configuration."
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <FormField
-            label="Display Name"
+    <Dialog
+      isOpen={isOpen}
+      onClose={handleInternalClose}
+      disableAnimation={true}
+      title="Edit Email Provider"
+      description="Update your email provider configuration."
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <FormField
+          label="Display Name"
+          required
+          hint="Internal name for this provider"
+        >
+          <Input
+            name="name"
+            defaultValue={provider.name}
+            placeholder="My Account"
             required
-            hint="Internal name for this provider"
+            autoFocus
+          />
+        </FormField>
+
+        <FormField label="Provider Type" required>
+          <Select
+            name="type"
+            value={type}
+            onValueChange={(val) => setType(val as EmailProviderType)}
           >
-            <Input
-              name="name"
-              defaultValue={provider.name}
-              placeholder="My Account"
-              required
-              autoFocus
-            />
-          </FormField>
+            <SelectTrigger>
+              <SelectValue placeholder="Select provider" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="RESEND">Resend</SelectItem>
+              <SelectItem value="MAILGUN">Mailgun</SelectItem>
+              <SelectItem value="SES">Amazon SES</SelectItem>
+            </SelectContent>
+          </Select>
+        </FormField>
 
-          <FormField label="Provider Type" required>
-            <Select
-              name="type"
-              value={type}
-              onValueChange={(val) => setType(val as EmailProviderType)}
+        {type === "RESEND" && (
+          <>
+            <FormField label="API Key" hint="Leave empty to keep current key">
+              <Input name="apiKey" type="password" placeholder="re_••••••••" />
+            </FormField>
+
+            <FormField
+              label="Webhook Secret"
+              hint="Svix signing secret for delivery tracking"
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Select provider" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="RESEND">Resend</SelectItem>
-                <SelectItem value="MAILGUN">Mailgun</SelectItem>
-                <SelectItem value="SES">Amazon SES</SelectItem>
-              </SelectContent>
-            </Select>
-          </FormField>
+              <Input
+                name="webhookSecret"
+                type="password"
+                defaultValue={(provider.config.webhook_secret as string) || ""}
+                placeholder="whsec_..."
+              />
+            </FormField>
+          </>
+        )}
 
-          {type === "RESEND" && (
-            <>
-              <FormField label="API Key" hint="Leave empty to keep current key">
-                <Input
-                  name="apiKey"
-                  type="password"
-                  placeholder="re_••••••••"
-                />
-              </FormField>
+        {type === "MAILGUN" && (
+          <>
+            <FormField label="API Key" hint="Leave empty to keep current key">
+              <Input name="apiKey" type="password" placeholder="key-••••••••" />
+            </FormField>
 
-              <FormField
-                label="Webhook Secret"
-                hint="Svix signing secret for delivery tracking"
-              >
-                <Input
-                  name="webhookSecret"
-                  type="password"
-                  defaultValue={
-                    (provider.config.webhook_secret as string) || ""
-                  }
-                  placeholder="whsec_..."
-                />
-              </FormField>
-            </>
-          )}
-
-          {type === "MAILGUN" && (
-            <>
-              <FormField label="API Key" hint="Leave empty to keep current key">
-                <Input
-                  name="apiKey"
-                  type="password"
-                  placeholder="key-••••••••"
-                />
-              </FormField>
-
-              <FormField
-                label="Sending Domain"
+            <FormField
+              label="Sending Domain"
+              required
+              hint="Your verified Mailgun domain"
+            >
+              <Input
+                name="domain"
+                defaultValue={(provider.config.domain as string) || ""}
+                placeholder="mg.example.com"
                 required
-                hint="Your verified Mailgun domain"
-              >
-                <Input
-                  name="domain"
-                  defaultValue={(provider.config.domain as string) || ""}
-                  placeholder="mg.example.com"
-                  required
-                />
-              </FormField>
+              />
+            </FormField>
 
-              <FormField
-                label="Region"
-                hint="Choose based on your Mailgun account region"
+            <FormField
+              label="Region"
+              hint="Choose based on your Mailgun account region"
+            >
+              <Select
+                name="region"
+                defaultValue={(provider.config.region as string) || "US"}
               >
-                <Select
-                  name="region"
-                  defaultValue={(provider.config.region as string) || "US"}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Region" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="US">US (api.mailgun.net)</SelectItem>
-                    <SelectItem value="EU">EU (api.eu.mailgun.net)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormField>
-            </>
-          )}
+                <SelectTrigger>
+                  <SelectValue placeholder="Region" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="US">US (api.mailgun.net)</SelectItem>
+                  <SelectItem value="EU">EU (api.eu.mailgun.net)</SelectItem>
+                </SelectContent>
+              </Select>
+            </FormField>
+          </>
+        )}
 
-          {type === "SES" && (
-            <>
-              <FormField
-                label="Access Key ID"
-                hint="Leave empty to keep current"
-              >
-                <Input
-                  name="accessKeyId"
-                  defaultValue={(provider.config.accessKeyId as string) || ""}
-                  placeholder="AKIA..."
-                />
-              </FormField>
+        {type === "SES" && (
+          <>
+            <FormField label="Access Key ID" hint="Leave empty to keep current">
+              <Input
+                name="accessKeyId"
+                defaultValue={(provider.config.accessKeyId as string) || ""}
+                placeholder="AKIA..."
+              />
+            </FormField>
 
-              <FormField
-                label="Secret Access Key"
-                hint="Leave empty to keep current"
-              >
-                <Input
-                  name="secretAccessKey"
-                  type="password"
-                  placeholder="••••••••"
-                />
-              </FormField>
+            <FormField
+              label="Secret Access Key"
+              hint="Leave empty to keep current"
+            >
+              <Input
+                name="secretAccessKey"
+                type="password"
+                placeholder="••••••••"
+              />
+            </FormField>
 
-              <FormField
-                label="Region"
+            <FormField
+              label="Region"
+              required
+              hint="AWS Region where SES is configured"
+            >
+              <Input
+                name="region"
+                defaultValue={(provider.config.region as string) || ""}
+                placeholder="us-east-1"
                 required
-                hint="AWS Region where SES is configured"
-              >
-                <Input
-                  name="region"
-                  defaultValue={(provider.config.region as string) || ""}
-                  placeholder="us-east-1"
-                  required
-                />
-              </FormField>
-            </>
-          )}
+              />
+            </FormField>
+          </>
+        )}
 
-          <div className="flex justify-end gap-3 mt-6">
-            <Button variant="secondary" type="button" onClick={handleClose}>
-              Cancel
-            </Button>
-            <Button type="submit">Save Changes</Button>
-          </div>
-        </form>
-      </Dialog>
-    </>
+        <div className="flex justify-end gap-3 mt-6">
+          <Button
+            variant="secondary"
+            type="button"
+            onClick={handleInternalClose}
+          >
+            Cancel
+          </Button>
+          <Button type="submit">Save Changes</Button>
+        </div>
+      </form>
+    </Dialog>
   );
 }

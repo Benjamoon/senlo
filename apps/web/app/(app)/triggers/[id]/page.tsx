@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getCampaignDetails } from "../actions";
+import { getCampaignDetails } from "apps/web/app/(app)/triggers/actions";
 import {
   PageHeader,
   Card,

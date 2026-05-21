@@ -1,14 +1,14 @@
 "use client";
 
-import { PageHeader } from "@senlo/ui";
+import { PageHeader, Button } from "@senlo/ui";
 import Link from "next/link";
-import { CreateTemplateDialog } from "./create-template-dialog";
-import { EditProjectDialog } from "./edit-project-dialog";
 import { useProject } from "apps/web/queries/projects";
 import { useProjectTemplates } from "apps/web/queries/templates";
 import { useProviders } from "apps/web/queries/providers";
 import { useAiProviders } from "apps/web/queries/ai-providers";
 import { TemplatesList } from "./templates-list";
+import { useDialogStore } from "apps/web/providers/dialogs/store";
+import { Settings2, Plus } from "lucide-react";
 
 interface ProjectPageClientProps {
   projectId: string;
@@ -20,6 +20,8 @@ export default function ProjectPage({ projectId }: ProjectPageClientProps) {
     isLoading: projectLoading,
     error: projectError,
   } = useProject(projectId);
+
+  const openDialog = useDialogStore((state) => state.open);
 
   const { data: templates = [], isLoading: templatesLoading } =
     useProjectTemplates({
@@ -88,12 +90,25 @@ export default function ProjectPage({ projectId }: ProjectPageClientProps) {
         }
         actions={
           <div className="flex items-center gap-3">
-            <EditProjectDialog
-              project={project}
-              providers={providers}
-              aiProviders={aiProviders}
-            />
-            <CreateTemplateDialog projectId={projectId} />
+            <Button
+              variant="outline"
+              onClick={() =>
+                openDialog("EDIT_PROJECT", {
+                  project,
+                  providers,
+                  aiProviders,
+                })
+              }
+            >
+              <Settings2 size={16} />
+              Edit Project
+            </Button>
+            <Button
+              onClick={() => openDialog("CREATE_TEMPLATE", { projectId })}
+            >
+              <Plus size={16} />
+              New Template
+            </Button>
           </div>
         }
       />

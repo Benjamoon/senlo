@@ -9,20 +9,21 @@ import {
   TabsTrigger,
   TabsContent,
 } from "@senlo/ui";
-import { Cloud, Trash2, CheckCircle2, Circle, Bot } from "lucide-react";
-import { AddProviderDialog } from "./add-provider-dialog";
-import { EditProviderDialog } from "./edit-provider-dialog";
-import { AddAiProviderDialog } from "./add-ai-provider-dialog";
 import {
-  useProviders,
-  useDeleteProvider,
-  useToggleProvider,
-} from "apps/web/queries/providers";
+  Cloud,
+  Trash2,
+  CheckCircle2,
+  Circle,
+  Bot,
+  Plus,
+  Pencil,
+} from "lucide-react";
+import { useProviders, useToggleProvider } from "apps/web/queries/providers";
 import {
   useAiProviders,
-  useDeleteAiProvider,
   useToggleAiProvider,
 } from "apps/web/queries/ai-providers";
+import { useDialogStore } from "apps/web/providers/dialogs/store";
 
 export default function ProvidersPage() {
   const {
@@ -39,19 +40,12 @@ export default function ProvidersPage() {
     refetch: refetchAi,
   } = useAiProviders();
 
-  const { mutate: deleteProvider } = useDeleteProvider();
   const { mutate: toggleProvider } = useToggleProvider();
-  const { mutate: deleteAiProvider } = useDeleteAiProvider();
   const { mutate: toggleAiProvider } = useToggleAiProvider();
+  const openDialog = useDialogStore((state) => state.open);
 
-  const handleDelete = (providerId: number) => {
-    if (!confirm("Are you sure you want to delete this provider?")) return;
-
-    deleteProvider(providerId, {
-      onError: () => {
-        alert("Failed to delete provider. Please try again.");
-      },
-    });
+  const handleDelete = (providerId: number, name: string) => {
+    openDialog("DELETE_PROVIDER", { providerId, name });
   };
 
   const handleToggle = (providerId: number, isActive: boolean) => {
@@ -65,14 +59,8 @@ export default function ProvidersPage() {
     );
   };
 
-  const handleDeleteAi = (providerId: number) => {
-    if (!confirm("Are you sure you want to delete this AI provider?")) return;
-
-    deleteAiProvider(providerId, {
-      onError: () => {
-        alert("Failed to delete AI provider. Please try again.");
-      },
-    });
+  const handleDeleteAi = (providerId: number, name: string) => {
+    openDialog("DELETE_AI_PROVIDER", { providerId, name });
   };
 
   const handleToggleAi = (providerId: number, isActive: boolean) => {
@@ -148,7 +136,10 @@ export default function ProvidersPage() {
         <TabsContent value="email">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-lg font-semibold">Email Sending Providers</h2>
-            <AddProviderDialog />
+            <Button onClick={() => openDialog("ADD_PROVIDER", {})}>
+              <Plus size={16} />
+              Add Provider
+            </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {providers.length === 0 ? (
@@ -177,9 +168,17 @@ export default function ProvidersPage() {
                       >
                         {provider.isActive ? "Active" : "Inactive"}
                       </Badge>
-                      <EditProviderDialog provider={provider} />
                       <button
-                        onClick={() => handleDelete(provider.id)}
+                        onClick={() =>
+                          openDialog("EDIT_PROVIDER", { provider })
+                        }
+                        className="text-zinc-400 hover:text-zinc-600 transition-colors cursor-pointer"
+                        title="Edit settings"
+                      >
+                        <Pencil size={18} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(provider.id, provider.name)}
                         className="text-zinc-400 hover:text-red-600 transition-colors cursor-pointer"
                       >
                         <Trash2 size={18} />
@@ -230,7 +229,10 @@ export default function ProvidersPage() {
         <TabsContent value="ai">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-lg font-semibold">AI Model Providers</h2>
-            <AddAiProviderDialog />
+            <Button onClick={() => openDialog("ADD_AI_PROVIDER", {})}>
+              <Plus size={16} />
+              Add AI Provider
+            </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {aiProviders.length === 0 ? (
@@ -261,7 +263,9 @@ export default function ProvidersPage() {
                         {provider.isActive ? "Active" : "Inactive"}
                       </Badge>
                       <button
-                        onClick={() => handleDeleteAi(provider.id)}
+                        onClick={() =>
+                          handleDeleteAi(provider.id, provider.name)
+                        }
                         className="text-zinc-400 hover:text-red-600 transition-colors"
                       >
                         <Trash2 size={16} />

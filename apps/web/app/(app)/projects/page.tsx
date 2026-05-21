@@ -1,13 +1,14 @@
 "use client";
 
-import { PageHeader, EmptyState } from "@senlo/ui";
-import { CreateProjectDialog } from "./create-project-dialog";
+import { PageHeader, EmptyState, Button } from "@senlo/ui";
 import { ProjectCard } from "./project-card";
-import { Folder, Loader2 } from "lucide-react";
+import { Folder, Loader2, Plus } from "lucide-react";
 import { ProjectsProvider, useProjectsContext } from "./projects-context";
+import { useDialogStore } from "apps/web/providers/dialogs/store";
 
 function ProjectsPageContent() {
   const { projects, isLoading, error } = useProjectsContext();
+  const openDialog = useDialogStore((state) => state.open);
 
   if (isLoading) {
     return (
@@ -55,14 +56,24 @@ function ProjectsPageContent() {
       <PageHeader
         title="Projects"
         description="Manage your projects, templates, and email campaigns."
-        actions={<CreateProjectDialog />}
+        actions={
+          <Button onClick={() => openDialog("CREATE_PROJECT", {})}>
+            <Plus size={16} />
+            New Project
+          </Button>
+        }
       />
 
       {!Array.isArray(projects) || projects.length === 0 ? (
         <EmptyState
           icon={<Folder size={40} />}
           title="No projects yet"
-          action={<CreateProjectDialog />}
+          action={
+            <Button onClick={() => openDialog("CREATE_PROJECT", {})}>
+              <Plus size={16} />
+              New Project
+            </Button>
+          }
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
