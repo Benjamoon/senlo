@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { CampaignEvent, CampaignEventType } from "@senlo/core";
-import { Badge } from "@senlo/ui";
+import { CampaignEventType } from "@senlo/core";
+import { Badge, Input } from "@senlo/ui";
+import { useQuery } from "@tanstack/react-query";
+import { getPaginatedCampaignEvents } from "../actions";
 import {
   Send,
   Eye,
@@ -14,10 +16,11 @@ import {
   Filter,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 
 interface DeliveryLogsProps {
-  events: CampaignEvent[];
+  campaignId: number;
 }
 
 const eventIcons: Record<string, React.ReactNode> = {
@@ -28,63 +31,60 @@ const eventIcons: Record<string, React.ReactNode> = {
   BOUNCE: <AlertCircle size={16} className="text-red-500" />,
   SPAM_REPORT: <AlertCircle size={16} className="text-orange-500" />,
   UNSUBSCRIBE: <UserMinus size={16} className="text-zinc-400" />,
+  FAILED: <AlertCircle size={16} className="text-red-500" />,
 };
 
-export function DeliveryLogs({ events }: DeliveryLogsProps) {
-  const eventTypes: CampaignEventType[] = Array.from(
-    new Set(events.map((e) => e.type)),
-  ).sort();
-  const [selectedType, setSelectedType] = useState<CampaignEventType>(
-    (eventTypes.includes("DELIVERED")
-      ? "DELIVERED"
-      : eventTypes[0]) as CampaignEventType,
-  );
+const EVENT_TYPES: (CampaignEventType | "ALL")[] = [
+  "ALL",
+  "SENT",
+  "DELIVERED",
+  "OPEN",
+  "CLICK",
+  "BOUNCE",
+  "SPAM_REPORT",
+  "UNSUBSCRIBE",
+  "FAILED",
+];
+
+export function DeliveryLogs({ campaignId }: DeliveryLogsProps) {
+  const [selectedType, setSelectedType] = useState<string>("ALL");
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [search, setSearch] = useState<string>("");
+  const [debouncedSearch, setDebouncedSearch] = useState<string>("");
 
   useEffect(() => {
-    if (
-      (!selectedType || !eventTypes.includes(selectedType)) &&
-      eventTypes.length > 0
-    ) {
-      setSelectedType(eventTypes[0]);
-    }
-  }, [eventTypes, selectedType]);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setCurrentPage(1);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const ITEMS_PER_PAGE = 30;
 
-  if (events.length === 0) {
-    return (
-      <div className="py-12 text-center bg-zinc-50 rounded-xl border border-dashed border-zinc-200">
-        <Clock size={32} className="mx-auto text-zinc-300 mb-2" />
-        <p className="text-sm text-zinc-500">
-          No delivery logs recorded yet. Trigger this email to see activity.
-        </p>
-      </div>
-    );
-  }
-
-  const filteredEvents = events.filter((e) => e.type === selectedType);
-
-  const totalPages = Math.ceil(filteredEvents.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedEvents = filteredEvents.slice(startIndex, endIndex);
-
-  const groupedEvents = paginatedEvents.reduce(
-    (acc, event) => {
-      if (!acc[event.type]) {
-        acc[event.type] = [];
-      }
-      acc[event.type].push(event);
-      return acc;
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: [
+      "campaign-events",
+      campaignId,
+      currentPage,
+      selectedType,
+      debouncedSearch,
+    ],
+    queryFn: async () => {
+      const result = await getPaginatedCampaignEvents(
+        campaignId,
+        currentPage,
+        ITEMS_PER_PAGE,
+        selectedType === "ALL" ? undefined : selectedType,
+        debouncedSearch || undefined,
+      );
+      if (!result.success) throw new Error(result.error.message);
+      return result.data;
     },
-    {} as Record<string, CampaignEvent[]>,
-  );
-
-  const sortedTypes = Object.keys(groupedEvents).sort();
+  });
 
   const handleTypeChange = (type: string) => {
-    setSelectedType(type as CampaignEventType);
+    setSelectedType(type);
     setCurrentPage(1);
   };
 
@@ -92,126 +92,151 @@ export function DeliveryLogs({ events }: DeliveryLogsProps) {
     setCurrentPage(page);
   };
 
+  if (isError) {
+    return (
+      <div className="py-12 text-center bg-red-50 rounded-xl border border-dashed border-red-200">
+        <AlertCircle size={32} className="mx-auto text-red-500 mb-2" />
+        <p className="text-sm text-red-600 font-medium">Failed to load logs</p>
+        <p className="text-xs text-red-500 mt-1">{(error as Error).message}</p>
+      </div>
+    );
+  }
+
+  const events = data?.events || [];
+  const total = data?.total || 0;
+  const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, total);
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Filter size={16} className="text-zinc-400" />
-          <select
-            value={selectedType}
-            onChange={(e) => handleTypeChange(e.target.value)}
-            className="px-3 py-2 border border-zinc-200 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            {eventTypes.map((type) => (
-              <option key={type} value={type}>
-                {type.replace("_", " ")}
-              </option>
-            ))}
-          </select>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4 flex-1">
+          <div className="flex-1 max-w-sm">
+            <Input
+              placeholder="Search by email..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Filter size={16} className="text-zinc-400" />
+            <select
+              value={selectedType}
+              onChange={(e) => handleTypeChange(e.target.value)}
+              className="px-3 py-2 border border-zinc-200 rounded-md text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              {EVENT_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {type === "ALL" ? "All Events" : type.replace("_", " ")}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        {filteredEvents.length > ITEMS_PER_PAGE && (
-          <div className="flex items-center gap-2 text-sm text-zinc-600">
-            <span>
-              Showing {startIndex + 1}-
-              {Math.min(endIndex, filteredEvents.length)} of{" "}
-              {filteredEvents.length}
-            </span>
+        {total > 0 && (
+          <div className="text-sm text-zinc-500 whitespace-nowrap">
+            Showing{" "}
+            <span className="font-medium text-zinc-900">{startIndex + 1}</span>-
+            <span className="font-medium text-zinc-900">{endIndex}</span> of{" "}
+            <span className="font-medium text-zinc-900">{total}</span>
           </div>
         )}
       </div>
 
-      <div className="space-y-6">
-        {sortedTypes.map((eventType) => {
-          const typeEvents = groupedEvents[eventType];
-          return (
-            <div key={eventType} className="space-y-3">
-              <div className="flex items-center gap-2 pb-2 border-b border-zinc-100">
-                <div className="flex items-center gap-2">
-                  {eventIcons[eventType] || <Clock size={16} />}
-                  <span className="font-medium text-sm">
-                    {eventType.replace("_", " ")} ({typeEvents.length})
-                  </span>
-                </div>
-              </div>
+      <div className="relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-lg">
+            <Loader2 size={24} className="animate-spin text-blue-500" />
+          </div>
+        )}
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-zinc-100">
-                      <th className="text-left py-2 px-3 font-medium text-zinc-600">
-                        Email
-                      </th>
-                      <th className="text-left py-2 px-3 font-medium text-zinc-600">
-                        Time
-                      </th>
-                      {eventType === "CLICK" && (
-                        <th className="text-left py-2 px-3 font-medium text-zinc-600">
-                          Link
-                        </th>
-                      )}
-                      <th className="text-left py-2 px-3 font-medium text-zinc-600">
-                        Details
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {typeEvents.map((event) => (
-                      <tr
-                        key={event.id}
-                        className="border-b border-zinc-50 hover:bg-zinc-25"
-                      >
-                        <td className="py-2 px-3 font-medium text-zinc-900">
-                          {event.email}
-                        </td>
-                        <td className="py-2 px-3 text-zinc-500">
-                          {event.occurredAt instanceof Date
-                            ? event.occurredAt.toLocaleString("en-GB")
-                            : String(event.occurredAt)}
-                        </td>
-                        {eventType === "CLICK" && (
-                          <td className="py-2 px-3">
-                            {event.linkUrl && (
-                              <span className="text-blue-600 text-xs truncate block max-w-32">
-                                {event.linkUrl}
-                              </span>
-                            )}
-                          </td>
+        {total === 0 && !isLoading ? (
+          <div className="py-12 text-center bg-zinc-50 rounded-xl border border-dashed border-zinc-200">
+            <Clock size={32} className="mx-auto text-zinc-300 mb-2" />
+            <p className="text-sm text-zinc-500">
+              {search || selectedType !== "ALL"
+                ? "No logs match your filters."
+                : "No delivery logs recorded yet."}
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto border border-zinc-100 rounded-lg">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-zinc-50/50 border-b border-zinc-100">
+                  <th className="text-left py-3 px-4 font-medium text-zinc-600">
+                    Type
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-zinc-600">
+                    Email
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-zinc-600">
+                    Time
+                  </th>
+                  <th className="text-left py-3 px-4 font-medium text-zinc-600">
+                    Details
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-50">
+                {events.map((event) => (
+                  <tr
+                    key={event.id}
+                    className="hover:bg-zinc-50/50 transition-colors"
+                  >
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        {eventIcons[event.type] || <Clock size={16} />}
+                        <span className="font-medium text-zinc-700 text-xs uppercase tracking-wider">
+                          {event.type.replace("_", " ")}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 font-medium text-zinc-900">
+                      {event.email}
+                    </td>
+                    <td className="py-3 px-4 text-zinc-500 whitespace-nowrap">
+                      {new Date(event.occurredAt).toLocaleString("en-GB")}
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex flex-wrap gap-1">
+                        {event.linkUrl && (
+                          <Badge
+                            variant="secondary"
+                            className="text-[10px] py-0 px-1 font-normal bg-blue-50 text-blue-700 border-blue-100"
+                          >
+                            Link: {event.linkUrl}
+                          </Badge>
                         )}
-                        <td className="py-2 px-3">
-                          {event.metadata &&
-                            Object.keys(event.metadata).length > 0 && (
-                              <div className="flex flex-wrap gap-1">
-                                {Object.entries(event.metadata).map(
-                                  ([key, value]) => (
-                                    <Badge
-                                      key={key}
-                                      variant="secondary"
-                                      className="text-[10px] py-0 px-1 font-normal"
-                                    >
-                                      {key}: {String(value)}
-                                    </Badge>
-                                  ),
-                                )}
-                              </div>
-                            )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          );
-        })}
+                        {event.metadata &&
+                          Object.entries(event.metadata).map(([key, value]) => (
+                            <Badge
+                              key={key}
+                              variant="secondary"
+                              className="text-[10px] py-0 px-1 font-normal"
+                            >
+                              {key}: {String(value)}
+                            </Badge>
+                          ))}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
-      {filteredEvents.length > ITEMS_PER_PAGE && (
+      {total > ITEMS_PER_PAGE && (
         <div className="flex items-center justify-center gap-2 pt-4 border-t border-zinc-100">
           <button
             onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="flex items-center gap-1 px-3 py-2 text-sm border border-zinc-200 rounded-md hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+            disabled={currentPage === 1 || isLoading}
+            className="flex items-center gap-1 px-3 py-2 text-sm border border-zinc-200 rounded-md hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <ChevronLeft size={16} />
             Previous
@@ -219,22 +244,7 @@ export function DeliveryLogs({ events }: DeliveryLogsProps) {
 
           <div className="flex items-center gap-1">
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-              if (totalPages <= 7) {
-                return (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`px-3 py-2 text-sm border rounded-md ${
-                      page === currentPage
-                        ? "bg-blue-500 text-white border-blue-500"
-                        : "border-zinc-200 hover:bg-zinc-50"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                );
-              }
-
+              // Simple pagination logic: show first, last, and around current
               if (
                 page === 1 ||
                 page === totalPages ||
@@ -244,9 +254,10 @@ export function DeliveryLogs({ events }: DeliveryLogsProps) {
                   <button
                     key={page}
                     onClick={() => handlePageChange(page)}
-                    className={`px-3 py-2 text-sm border rounded-md ${
+                    disabled={isLoading}
+                    className={`px-3 py-2 text-sm border rounded-md transition-colors ${
                       page === currentPage
-                        ? "bg-blue-500 text-white border-blue-500"
+                        ? "bg-zinc-900 text-white border-zinc-900"
                         : "border-zinc-200 hover:bg-zinc-50"
                     }`}
                   >
@@ -269,8 +280,8 @@ export function DeliveryLogs({ events }: DeliveryLogsProps) {
 
           <button
             onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="flex items-center gap-1 px-3 py-2 text-sm border border-zinc-200 rounded-md hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+            disabled={currentPage === totalPages || isLoading}
+            className="flex items-center gap-1 px-3 py-2 text-sm border border-zinc-200 rounded-md hover:bg-zinc-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Next
             <ChevronRight size={16} />

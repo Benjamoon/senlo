@@ -104,6 +104,19 @@ export interface ICampaignRepository {
     data: Omit<CampaignEvent, "id" | "occurredAt">,
   ): Promise<CampaignEvent>;
   getEventsByCampaign(campaignId: number): Promise<CampaignEvent[]>;
+  getPaginatedEventsByCampaign(
+    campaignId: number,
+    options: {
+      page: number;
+      pageSize: number;
+      type?: string;
+      search?: string;
+    },
+  ): Promise<{ events: CampaignEvent[]; total: number }>;
+  getEventStatsByCampaign(campaignId: number): Promise<{
+    opens: { unique: number; total: number };
+    clicks: { unique: number; total: number };
+  }>;
 }
 
 export interface ITriggeredSendLogRepository {
@@ -114,4 +127,9 @@ export interface ITriggeredSendLogRepository {
   findByProviderMessageId(
     providerMessageId: string,
   ): Promise<TriggeredSendLog | null>;
+  getStatsByCampaign(campaignId: number): Promise<{
+    sent: number;
+    delivered: number;
+    errors: number;
+  }>;
 }

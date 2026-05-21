@@ -1,4 +1,4 @@
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, ilike, sql } from "drizzle-orm";
 import { db } from "../client";
 import { campaigns, campaignEvents } from "../schema";
 import { Campaign, CampaignEvent, ICampaignRepository } from "@senlo/core";
@@ -186,5 +186,101 @@ export class CampaignRepository
       .orderBy(desc(campaignEvents.occurredAt));
 
     return rows.map((r) => this.mapEvent(r));
+  }
+
+  /**
+   * Get paginated and filtered events for a campaign.
+   * @param campaignId - The campaign ID
+   * @param options - Pagination and filter options
+   * @returns Paginated events and total count
+   */
+  async getPaginatedEventsByCampaign(
+    campaignId: number,
+    options: {
+      page: number;
+      pageSize: number;
+      type?: string;
+      search?: string;
+    },
+  ): Promise<{ events: CampaignEvent[]; total: number }> {
+    const { page, pageSize, type, search } = options;
+    const offset = (page - 1) * pageSize;
+
+    const whereClauses = [eq(campaignEvents.campaignId, campaignId)];
+
+    if (type) {
+      whereClauses.push(eq(campaignEvents.type, type as any));
+    }
+
+    if (search) {
+      whereClauses.push(ilike(campaignEvents.email, `%${search}%`));
+    }
+
+    const query = db
+      .select()
+      .from(campaignEvents)
+      .where(and(...whereClauses))
+      .orderBy(desc(campaignEvents.occurredAt))
+      .limit(pageSize)
+      .offset(offset);
+
+    const countQuery = db
+      .select({ count: sql<number>`count(*)` })
+      .from(campaignEvents)
+      .where(and(...whereClauses));
+
+    const [rows, [countResult]] = await Promise.all([query, countQuery]);
+
+    return {
+      events: rows.map((r) => this.mapEvent(r)),
+      total: Number(countResult.count),
+    };
+  }
+
+  /**
+   * Get event statistics for a campaign.
+   * @param campaignId - The campaign ID
+   * @returns Stats for opens and clicks
+   */
+  async getEventStatsByCampaign(campaignId: number): Promise<{
+    opens: { unique: number; total: number };
+    clicks: { unique: number; total: number };
+  }> {
+    const [openStats] = await db
+      .select({
+        total: sql<number>`count(*)`,
+        unique: sql<number>`count(distinct ${campaignEvents.email})`,
+      })
+      .from(campaignEvents)
+      .where(
+        and(
+          eq(campaignEvents.campaignId, campaignId),
+          eq(campaignEvents.type, "OPEN" as any),
+        ),
+      );
+
+    const [clickStats] = await db
+      .select({
+        total: sql<number>`count(*)`,
+        unique: sql<number>`count(distinct ${campaignEvents.email})`,
+      })
+      .from(campaignEvents)
+      .where(
+        and(
+          eq(campaignEvents.campaignId, campaignId),
+          eq(campaignEvents.type, "CLICK" as any),
+        ),
+      );
+
+    return {
+      opens: {
+        total: Number(openStats?.total || 0),
+        unique: Number(openStats?.unique || 0),
+      },
+      clicks: {
+        total: Number(clickStats?.total || 0),
+        unique: Number(clickStats?.unique || 0),
+      },
+    };
   }
 }

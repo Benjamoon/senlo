@@ -40,31 +40,12 @@ export default async function CampaignDetailsPage({
   const details = await getCampaignDetails(id);
   if (!details) return notFound();
 
-  const { campaign, project, template, events, triggeredLogs } = details;
-
-  const getUniqueCount = (type: string) => {
-    const emails = events
-      .filter((e) => e.type === type)
-      .map((e) => e.email.toLowerCase());
-    return new Set(emails).size;
-  };
-
-  const stats = {
-    sent: triggeredLogs.filter((l) =>
-      ["SUCCESS", "DELIVERED", "BOUNCED", "COMPLAINED"].includes(l.status),
-    ).length,
-    delivered: triggeredLogs.filter((l) => l.status === "DELIVERED").length,
-    uniqueOpens: getUniqueCount("OPEN"),
-    totalOpens: events.filter((e) => e.type === "OPEN").length,
-    uniqueClicks: getUniqueCount("CLICK"),
-    totalClicks: events.filter((e) => e.type === "CLICK").length,
-    errors: triggeredLogs.filter((l) => l.status === "FAILED").length,
-  };
+  const { campaign, project, template, stats } = details;
 
   const openRate =
-    stats.sent > 0 ? Math.round((stats.uniqueOpens / stats.sent) * 100) : 0;
+    stats.sent > 0 ? Math.round((stats.opens.unique / stats.sent) * 100) : 0;
   const clickRate =
-    stats.sent > 0 ? Math.round((stats.uniqueClicks / stats.sent) * 100) : 0;
+    stats.sent > 0 ? Math.round((stats.clicks.unique / stats.sent) * 100) : 0;
 
   return (
     <main className="max-w-6xl mx-auto py-10 px-8">
@@ -133,13 +114,13 @@ export default async function CampaignDetailsPage({
                     label: "Open Rate",
                     value: `${openRate}%`,
                     icon: <Eye size={16} />,
-                    sub: `${stats.uniqueOpens} unique / ${stats.totalOpens} total`,
+                    sub: `${stats.opens.unique} unique / ${stats.opens.total} total`,
                   },
                   {
                     label: "Click Rate",
                     value: `${clickRate}%`,
                     icon: <MousePointer2 size={16} />,
-                    sub: `${stats.uniqueClicks} unique / ${stats.totalClicks} total`,
+                    sub: `${stats.clicks.unique} unique / ${stats.clicks.total} total`,
                   },
                 ].map((s, i) => (
                   <Card key={i} className="p-4 flex flex-col gap-1">
@@ -190,7 +171,7 @@ export default async function CampaignDetailsPage({
                 <BarChart3 size={20} className="text-zinc-400" />
                 Delivery Activity
               </h3>
-              <DeliveryLogs events={events} />
+              <DeliveryLogs campaignId={campaign.id} />
             </section>
           </Card>
         </TabsContent>

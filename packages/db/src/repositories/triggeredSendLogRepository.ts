@@ -1,4 +1,4 @@
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import { db } from "../client";
 import { triggeredSendLogs } from "../schema";
 import { TriggeredSendLog } from "@senlo/core";
@@ -101,5 +101,29 @@ export class TriggeredSendLogRepository extends BaseRepository<
       .where(eq(triggeredSendLogs.providerMessageId, providerMessageId));
 
     return row ? this.mapToEntity(row) : null;
+  }
+
+  /**
+   * Get send statistics for a campaign.
+   */
+  async getStatsByCampaign(campaignId: number): Promise<{
+    sent: number;
+    delivered: number;
+    errors: number;
+  }> {
+    const [stats] = await db
+      .select({
+        sent: sql<number>`count(*) filter (where status in ('SUCCESS', 'DELIVERED', 'BOUNCED', 'COMPLAINED'))`,
+        delivered: sql<number>`count(*) filter (where status = 'DELIVERED')`,
+        errors: sql<number>`count(*) filter (where status = 'FAILED')`,
+      })
+      .from(triggeredSendLogs)
+      .where(eq(triggeredSendLogs.campaignId, campaignId));
+
+    return {
+      sent: Number(stats?.sent || 0),
+      delivered: Number(stats?.delivered || 0),
+      errors: Number(stats?.errors || 0),
+    };
   }
 }

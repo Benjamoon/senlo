@@ -14,7 +14,6 @@ import {
   Project,
   EmailTemplate,
   CampaignEvent,
-  TriggeredSendLog,
   encodeUnsubscribeToken,
   renderEmailDesign,
   wrapLinksWithTracking,
@@ -51,15 +50,20 @@ export async function getCampaignDetails(id: number): Promise<{
   campaign: Campaign;
   project: Project;
   template: EmailTemplate;
-  events: CampaignEvent[];
-  triggeredLogs: TriggeredSendLog[];
+  stats: {
+    sent: number;
+    delivered: number;
+    opens: { unique: number; total: number };
+    clicks: { unique: number; total: number };
+    errors: number;
+  };
 } | null> {
   const { campaign, project } = await getAuthorizedCampaign(id);
 
-  const [template, events, triggeredLogs] = await Promise.all([
+  const [template, eventStats, sendStats] = await Promise.all([
     templateRepo.findById(campaign.templateId),
-    campaignRepo.getEventsByCampaign(id),
-    triggeredLogRepo.findByCampaign(id),
+    campaignRepo.getEventStatsByCampaign(id),
+    triggeredLogRepo.getStatsByCampaign(id),
   ]);
 
   if (!template) return null;
@@ -68,9 +72,39 @@ export async function getCampaignDetails(id: number): Promise<{
     campaign,
     project,
     template,
-    events,
-    triggeredLogs,
+    stats: {
+      ...sendStats,
+      opens: eventStats.opens,
+      clicks: eventStats.clicks,
+    },
   };
+}
+
+export async function getPaginatedCampaignEvents(
+  campaignId: number,
+  page: number,
+  pageSize: number,
+  type?: string,
+  search?: string,
+): Promise<ActionResult<{ events: CampaignEvent[]; total: number }>> {
+  return withErrorHandling(async () => {
+    await getAuthorizedCampaign(campaignId);
+
+    logger.debug("Fetching paginated campaign events", {
+      campaignId,
+      page,
+      pageSize,
+      type,
+      search,
+    });
+
+    return await campaignRepo.getPaginatedEventsByCampaign(campaignId, {
+      page,
+      pageSize,
+      type,
+      search,
+    });
+  });
 }
 
 export async function listAllCampaigns(): Promise<ActionResult<Campaign[]>> {
