@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { DeliveryLogs } from "./delivery-logs";
+import { AnalyticsTab } from "./analytics/analytics-tab";
 import { WebhookInfo } from "./webhook-info";
 import { TriggerConfigurationCard } from "./trigger-configuration-card";
 import { TriggerPolling } from "./trigger-polling";
@@ -86,6 +87,7 @@ export default async function CampaignDetailsPage({
       <Tabs defaultValue="delivery" className="w-full">
         <TabsList className="mb-8">
           <TabsTrigger value="general">General</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="delivery">Delivery Logs</TabsTrigger>
         </TabsList>
 
@@ -174,6 +176,13 @@ export default async function CampaignDetailsPage({
               <DeliveryLogs campaignId={campaign.id} />
             </section>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <AnalyticsTab
+            campaignId={campaign.id}
+            totalDelivered={stats.delivered}
+          />
         </TabsContent>
       </Tabs>
     </main>

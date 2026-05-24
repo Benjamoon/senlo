@@ -141,3 +141,15 @@ export interface SavedRow {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface LinkStat {
+  url: string;
+  totalClicks: number;
+  uniqueClicks: number;
+}
+
+export interface TimeSeriesData {
+  timestamp: string;
+  opens: number;
+  clicks: number;
+}

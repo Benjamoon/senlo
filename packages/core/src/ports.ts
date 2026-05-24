@@ -6,6 +6,8 @@ import type {
   CampaignEvent,
   EmailProvider,
   TriggeredSendLog,
+  LinkStat,
+  TimeSeriesData,
 } from "./domain";
 import type { EmailTemplate } from "./emailTemplate";
 
@@ -117,6 +119,14 @@ export interface ICampaignRepository {
     opens: { unique: number; total: number };
     clicks: { unique: number; total: number };
   }>;
+  getLinkStatsByCampaign(campaignId: number): Promise<LinkStat[]>;
+  getTimeSeriesStatsByCampaign(
+    campaignId: number,
+    options: {
+      interval: "hour" | "day";
+      days?: number;
+    },
+  ): Promise<TimeSeriesData[]>;
 }
 
 export interface ITriggeredSendLogRepository {

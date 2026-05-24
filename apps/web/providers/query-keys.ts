@@ -97,4 +97,18 @@ export const queryKeys = {
     details: () => [...queryKeys.apiKeys.all, "detail"] as const,
     detail: (id: number) => [...queryKeys.apiKeys.details(), id] as const,
   },
+
+  analytics: {
+    all: ["analytics"] as const,
+    campaign: (campaignId: number) =>
+      ["analytics", "campaign", campaignId] as const,
+    links: (campaignId: number) =>
+      [...queryKeys.analytics.campaign(campaignId), "links"] as const,
+    timeSeries: (campaignId: number, options: Record<string, unknown>) =>
+      [
+        ...queryKeys.analytics.campaign(campaignId),
+        "time-series",
+        options,
+      ] as const,
+  },
 } as const;

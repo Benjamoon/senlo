@@ -1,7 +1,13 @@
 import { eq, desc, and, ilike, sql } from "drizzle-orm";
 import { db } from "../client";
 import { campaigns, campaignEvents } from "../schema";
-import { Campaign, CampaignEvent, ICampaignRepository } from "@senlo/core";
+import {
+  Campaign,
+  CampaignEvent,
+  ICampaignRepository,
+  LinkStat,
+  TimeSeriesData,
+} from "@senlo/core";
 import { BaseRepository } from "./baseRepository";
 
 // Drizzle inferred types for insert operations
@@ -282,5 +288,81 @@ export class CampaignRepository
         unique: Number(clickStats?.unique || 0),
       },
     };
+  }
+
+  /**
+   * Get statistics for each link in a campaign.
+   */
+  async getLinkStatsByCampaign(campaignId: number): Promise<LinkStat[]> {
+    const rows = await db
+      .select({
+        url: campaignEvents.linkUrl,
+        totalClicks: sql<number>`count(*)`,
+        uniqueClicks: sql<number>`count(distinct ${campaignEvents.email})`,
+      })
+      .from(campaignEvents)
+      .where(
+        and(
+          eq(campaignEvents.campaignId, campaignId),
+          eq(campaignEvents.type, "CLICK" as any),
+        ),
+      )
+      .groupBy(campaignEvents.linkUrl)
+      .orderBy(desc(sql`count(*)`));
+
+    return rows.map((r) => ({
+      url: r.url || "unknown",
+      totalClicks: Number(r.totalClicks),
+      uniqueClicks: Number(r.uniqueClicks),
+    }));
+  }
+
+  /**
+   * Get time-series statistics for opens and clicks.
+   */
+  async getTimeSeriesStatsByCampaign(
+    campaignId: number,
+    options: {
+      interval: "hour" | "day";
+      days?: number;
+    },
+  ): Promise<TimeSeriesData[]> {
+    const { interval, days = 7 } = options;
+
+    // Use date_trunc for grouping and generate_series to fill gaps
+    const query = sql`
+      WITH intervals AS (
+        SELECT generate_series(
+          date_trunc(${interval}, now() - interval '${sql.raw(days.toString())} days'),
+          date_trunc(${interval}, now()),
+          interval '1 ${sql.raw(interval)}'
+        ) AS bucket
+      ),
+      stats AS (
+        SELECT
+          date_trunc(${interval}, occurred_at) AS bucket,
+          count(*) FILTER (WHERE type = 'OPEN') as opens,
+          count(*) FILTER (WHERE type = 'CLICK') as clicks
+        FROM ${campaignEvents}
+        WHERE campaign_id = ${campaignId}
+          AND occurred_at >= now() - interval '${sql.raw(days.toString())} days'
+        GROUP BY 1
+      )
+      SELECT
+        intervals.bucket as timestamp,
+        COALESCE(stats.opens, 0) as opens,
+        COALESCE(stats.clicks, 0) as clicks
+      FROM intervals
+      LEFT JOIN stats ON intervals.bucket = stats.bucket
+      ORDER BY intervals.bucket ASC
+    `;
+
+    const result = await db.execute(query);
+
+    return (result.rows as any[]).map((r: any) => ({
+      timestamp: new Date(r.timestamp).toISOString(),
+      opens: Number(r.opens),
+      clicks: Number(r.clicks),
+    }));
   }
 }

@@ -18,6 +18,8 @@ import {
   renderEmailDesign,
   wrapLinksWithTracking,
   EmailDesignDocument,
+  LinkStat,
+  TimeSeriesData,
 } from "@senlo/core";
 import { emailQueue } from "@senlo/core/src/queue";
 import { ActionResult, withErrorHandling } from "apps/web/lib/errors";
@@ -104,6 +106,28 @@ export async function getPaginatedCampaignEvents(
       type,
       search,
     });
+  });
+}
+
+export async function getCampaignLinkStats(
+  campaignId: number,
+): Promise<ActionResult<LinkStat[]>> {
+  return withErrorHandling(async () => {
+    await getAuthorizedCampaign(campaignId);
+    return await campaignRepo.getLinkStatsByCampaign(campaignId);
+  });
+}
+
+export async function getCampaignTimeSeriesStats(
+  campaignId: number,
+  options: {
+    interval: "hour" | "day";
+    days?: number;
+  },
+): Promise<ActionResult<TimeSeriesData[]>> {
+  return withErrorHandling(async () => {
+    await getAuthorizedCampaign(campaignId);
+    return await campaignRepo.getTimeSeriesStatsByCampaign(campaignId, options);
   });
 }
 
