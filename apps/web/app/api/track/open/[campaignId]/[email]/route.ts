@@ -1,0 +1,63 @@
+import { NextRequest, NextResponse } from "next/server";
+import { CampaignRepository } from "@senlo/db";
+import { logger } from "apps/web/lib/logger";
+
+const campaignRepo = new CampaignRepository();
+
+// 1x1 transparent GIF
+const TRANSPARENT_PIXEL = Buffer.from(
+  "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+  "base64",
+);
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ campaignId: string; email: string }> },
+) {
+  const { campaignId, email } = await params;
+  const id = Number(campaignId);
+  const decodedEmail = decodeURIComponent(email);
+
+  if (isNaN(id)) {
+    return new NextResponse("Invalid campaign ID", { status: 400 });
+  }
+
+  try {
+    const userAgent = request.headers.get("user-agent") || "unknown";
+    const ip =
+      request.headers.get("x-forwarded-for") ||
+      request.headers.get("x-real-ip") ||
+      "unknown";
+
+    logger.debug("Tracking email open", {
+      campaignId: id,
+      email: decodedEmail,
+    });
+
+    await campaignRepo.logEvent({
+      campaignId: id,
+      email: decodedEmail,
+      type: "OPEN",
+      metadata: {
+        userAgent,
+        ip,
+      },
+    });
+  } catch (error) {
+    // We don't want to break the image loading if DB fails
+    logger.error("Failed to log open event", {
+      error: error instanceof Error ? error.message : String(error),
+      campaignId: id,
+      email: decodedEmail,
+    });
+  }
+
+  return new NextResponse(TRANSPARENT_PIXEL, {
+    headers: {
+      "Content-Type": "image/gif",
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+      Pragma: "no-cache",
+      Expires: "0",
+    },
+  });
+}

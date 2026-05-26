@@ -130,12 +130,17 @@ export interface ICampaignRepository {
 }
 
 export interface ITriggeredSendLogRepository {
+  findById(id: number): Promise<TriggeredSendLog | null>;
   update(
     id: number,
     data: Partial<Omit<TriggeredSendLog, "id" | "sentAt">>,
   ): Promise<TriggeredSendLog | null>;
   findByProviderMessageId(
     providerMessageId: string,
+  ): Promise<TriggeredSendLog | null>;
+  findLatestByCampaignAndEmail(
+    campaignId: number,
+    email: string,
   ): Promise<TriggeredSendLog | null>;
   getStatsByCampaign(campaignId: number): Promise<{
     sent: number;

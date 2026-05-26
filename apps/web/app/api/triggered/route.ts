@@ -144,7 +144,7 @@ export async function POST(req: NextRequest) {
     const log = await logRepo.create({
       campaignId: campaign.id,
       email: to,
-      status: "SUCCESS",
+      status: "PENDING",
       error: null,
       data: data,
     });

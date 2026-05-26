@@ -54,9 +54,17 @@ export class EmailWorkerProcessor {
 
       // Update log with provider message ID if it's a triggered send
       if (logId && this.logRepo) {
+        const currentLog = await this.logRepo.findById(logId);
+        // Only update to SUCCESS if it's still PENDING to avoid overwriting webhooks
+        const newStatus =
+          currentLog &&
+          ["DELIVERED", "BOUNCED", "COMPLAINED"].includes(currentLog.status)
+            ? currentLog.status
+            : "SUCCESS";
+
         await this.logRepo.update(logId, {
           providerMessageId: result.messageId,
-          status: "SUCCESS",
+          status: newStatus as any,
         });
       }
 

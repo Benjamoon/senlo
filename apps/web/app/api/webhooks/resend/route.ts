@@ -138,7 +138,17 @@ export async function POST(req: NextRequest) {
 
   try {
     // 1. Find the log entry by provider message ID
-    const logEntry = await logRepo.findByProviderMessageId(providerMessageId);
+    let logEntry = await logRepo.findByProviderMessageId(providerMessageId);
+
+    // 1.1 Fallback: Find by campaignId and email if providerMessageId lookup fails
+    if (!logEntry && campaignId) {
+      logger.info("Log entry not found by messageId, trying fallback lookup", {
+        providerMessageId,
+        campaignId,
+        email,
+      });
+      logEntry = await logRepo.findLatestByCampaignAndEmail(campaignId, email);
+    }
 
     if (
       type === "email.bounced" ||

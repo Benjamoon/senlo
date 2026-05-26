@@ -1,4 +1,4 @@
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, sql, and } from "drizzle-orm";
 import { db } from "../client";
 import { triggeredSendLogs } from "../schema";
 import { TriggeredSendLog } from "@senlo/core";
@@ -20,12 +20,14 @@ export class TriggeredSendLogRepository extends BaseRepository<
    * @param row - The raw database row
    * @returns The mapped TriggeredSendLog
    */
-  protected mapToEntity(row: typeof triggeredSendLogs.$inferSelect): TriggeredSendLog {
+  protected mapToEntity(
+    row: typeof triggeredSendLogs.$inferSelect,
+  ): TriggeredSendLog {
     return {
       id: row.id,
       campaignId: row.campaignId,
       email: row.email,
-      status: row.status as "SUCCESS" | "FAILED" | "BOUNCED" | "COMPLAINED" | "DELIVERED",
+      status: row.status as any,
       providerMessageId: row.providerMessageId,
       error: row.error,
       data: row.data as Record<string, any> | null,
@@ -54,7 +56,7 @@ export class TriggeredSendLogRepository extends BaseRepository<
    * @returns The created log entry
    */
   async create(
-    data: Omit<TriggeredSendLog, "id" | "sentAt">
+    data: Omit<TriggeredSendLog, "id" | "sentAt">,
   ): Promise<TriggeredSendLog> {
     const [row] = await db
       .insert(triggeredSendLogs)
@@ -76,7 +78,7 @@ export class TriggeredSendLogRepository extends BaseRepository<
    */
   async update(
     id: number,
-    data: Partial<Omit<TriggeredSendLog, "id" | "sentAt">>
+    data: Partial<Omit<TriggeredSendLog, "id" | "sentAt">>,
   ): Promise<TriggeredSendLog | null> {
     const [row] = await db
       .update(triggeredSendLogs)
@@ -93,12 +95,34 @@ export class TriggeredSendLogRepository extends BaseRepository<
    * Find a log entry by provider message ID.
    */
   async findByProviderMessageId(
-    providerMessageId: string
+    providerMessageId: string,
   ): Promise<TriggeredSendLog | null> {
     const [row] = await db
       .select()
       .from(triggeredSendLogs)
       .where(eq(triggeredSendLogs.providerMessageId, providerMessageId));
+
+    return row ? this.mapToEntity(row) : null;
+  }
+
+  /**
+   * Find the latest log entry for a campaign and email.
+   */
+  async findLatestByCampaignAndEmail(
+    campaignId: number,
+    email: string,
+  ): Promise<TriggeredSendLog | null> {
+    const [row] = await db
+      .select()
+      .from(triggeredSendLogs)
+      .where(
+        and(
+          eq(triggeredSendLogs.campaignId, campaignId),
+          eq(triggeredSendLogs.email, email),
+        ),
+      )
+      .orderBy(desc(triggeredSendLogs.sentAt))
+      .limit(1);
 
     return row ? this.mapToEntity(row) : null;
   }
@@ -120,9 +144,20 @@ export class TriggeredSendLogRepository extends BaseRepository<
       .from(triggeredSendLogs)
       .where(eq(triggeredSendLogs.campaignId, campaignId));
 
+    // Also count events from campaign_events as a fallback/complement
+    const [eventStats] = await db
+      .select({
+        delivered: sql<number>`count(*) filter (where type = 'DELIVERED')`,
+      })
+      .from(sql`campaign_events`)
+      .where(eq(sql`campaign_id`, campaignId));
+
     return {
       sent: Number(stats?.sent || 0),
-      delivered: Number(stats?.delivered || 0),
+      delivered: Math.max(
+        Number(stats?.delivered || 0),
+        Number(eventStats?.delivered || 0),
+      ),
       errors: Number(stats?.errors || 0),
     };
   }
