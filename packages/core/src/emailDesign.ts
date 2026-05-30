@@ -17,9 +17,24 @@ export type ContentBlockType =
   | "product-line"
   | "socials";
 
+export type ConditionOperator =
+  | "equals"
+  | "not_equals"
+  | "gt"
+  | "lt"
+  | "is_set"
+  | "is_not_set";
+
+export interface ContentCondition {
+  variable: string;
+  operator: ConditionOperator;
+  value?: string | number | boolean;
+}
+
 export interface BaseContentBlock {
   id: ContentBlockId;
   type: ContentBlockType;
+  condition?: ContentCondition;
 }
 
 export interface HeadingBlock extends BaseContentBlock {
@@ -202,7 +217,14 @@ export interface ProductLineBlock extends BaseContentBlock {
 }
 
 export interface SocialLink {
-  type: "facebook" | "twitter" | "instagram" | "youtube" | "discord" | "github" | "reddit";
+  type:
+    | "facebook"
+    | "twitter"
+    | "instagram"
+    | "youtube"
+    | "discord"
+    | "github"
+    | "reddit";
   url: string;
   icon: string; // URL for icon
 }
@@ -248,6 +270,7 @@ export interface RowBlock {
   id: RowId;
   type: "row";
   columns: ColumnBlock[];
+  condition?: ContentCondition;
   settings: {
     backgroundColor?: string;
     fullWidth?: boolean;
@@ -304,12 +327,37 @@ export const paddingSchema = z.object({
   left: z.number().int().nonnegative().optional(),
 });
 
+export const conditionOperatorSchema = z.enum([
+  "equals",
+  "not_equals",
+  "gt",
+  "lt",
+  "is_set",
+  "is_not_set",
+]);
+
+export const contentConditionSchema = z.object({
+  variable: z.string(),
+  operator: conditionOperatorSchema,
+  value: z.union([z.string(), z.number(), z.boolean()]).optional(),
+});
+
 export const headingBlockSchema = z.object({
   id: z.string(),
   type: z.literal("heading"),
+  condition: contentConditionSchema.optional(),
   data: z.object({
     text: z.string(),
-    level: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5), z.literal(6)]).optional(),
+    level: z
+      .union([
+        z.literal(1),
+        z.literal(2),
+        z.literal(3),
+        z.literal(4),
+        z.literal(5),
+        z.literal(6),
+      ])
+      .optional(),
     align: z.enum(["left", "center", "right"]).optional(),
     color: z.string().optional(),
     fontSize: z.number().int().positive().optional(),
@@ -325,6 +373,7 @@ export const headingBlockSchema = z.object({
 export const paragraphBlockSchema = z.object({
   id: z.string(),
   type: z.literal("paragraph"),
+  condition: contentConditionSchema.optional(),
   data: z.object({
     text: z.string(),
     align: z.enum(["left", "center", "right"]).optional(),
@@ -355,6 +404,7 @@ export const shadowSchema = z.object({
 export const imageBlockSchema = z.object({
   id: z.string(),
   type: z.literal("image"),
+  condition: contentConditionSchema.optional(),
   data: z.object({
     src: z.string(),
     alt: z.string().optional(),
@@ -371,6 +421,7 @@ export const imageBlockSchema = z.object({
 export const buttonBlockSchema = z.object({
   id: z.string(),
   type: z.literal("button"),
+  condition: contentConditionSchema.optional(),
   data: z.object({
     text: z.string(),
     href: z.string(),
@@ -392,6 +443,7 @@ export const buttonBlockSchema = z.object({
 export const spacerBlockSchema = z.object({
   id: z.string(),
   type: z.literal("spacer"),
+  condition: contentConditionSchema.optional(),
   data: z.object({
     height: z.number().int().nonnegative(),
     padding: paddingSchema.optional(),
@@ -401,6 +453,7 @@ export const spacerBlockSchema = z.object({
 export const listBlockSchema = z.object({
   id: z.string(),
   type: z.literal("list"),
+  condition: contentConditionSchema.optional(),
   data: z.object({
     items: z.array(z.string()),
     listType: z.enum(["ordered", "unordered"]),
@@ -416,6 +469,7 @@ export const listBlockSchema = z.object({
 export const dividerBlockSchema = z.object({
   id: z.string(),
   type: z.literal("divider"),
+  condition: contentConditionSchema.optional(),
   data: z.object({
     color: z.string().optional(),
     width: z.number().int().min(1).max(100).optional(),
@@ -437,6 +491,7 @@ const textStyleSchema = z.object({
 export const productLineBlockSchema = z.object({
   id: z.string(),
   type: z.literal("product-line"),
+  condition: contentConditionSchema.optional(),
   data: z.object({
     leftText: z.string(),
     rightText: z.string(),
@@ -448,7 +503,15 @@ export const productLineBlockSchema = z.object({
 });
 
 const socialLinkSchema = z.object({
-  type: z.enum(["facebook", "twitter", "instagram", "youtube", "discord", "github", "reddit"]),
+  type: z.enum([
+    "facebook",
+    "twitter",
+    "instagram",
+    "youtube",
+    "discord",
+    "github",
+    "reddit",
+  ]),
   url: z.string(),
   icon: z.string(),
 });
@@ -456,8 +519,11 @@ const socialLinkSchema = z.object({
 export const socialsBlockSchema = z.object({
   id: z.string(),
   type: z.literal("socials"),
+  condition: contentConditionSchema.optional(),
   data: z.object({
-    links: z.array(socialLinkSchema).min(1, "At least one social link is required"),
+    links: z
+      .array(socialLinkSchema)
+      .min(1, "At least one social link is required"),
     align: z.enum(["left", "center", "right"]).optional(),
     size: z.number().int().min(16).max(64).optional(),
     spacing: z.number().int().min(0).max(50).optional(),
@@ -487,6 +553,7 @@ export const rowBlockSchema = z.object({
   id: z.string(),
   type: z.literal("row"),
   columns: z.array(columnBlockSchema).min(1),
+  condition: contentConditionSchema.optional(),
   settings: z
     .object({
       backgroundColor: z.string().optional(),

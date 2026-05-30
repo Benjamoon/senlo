@@ -1,8 +1,13 @@
 import { RowBlock, ColumnBlock } from "../emailDesign";
 import { RenderContext } from "./types";
 import { renderBlock } from "./renderBlocks";
+import { evaluateCondition } from "./conditions";
 
 export function renderRow(row: RowBlock, context: RenderContext): string {
+  if (!evaluateCondition(row.condition, context)) {
+    return "";
+  }
+
   const { settings } = row;
   const padding = settings.padding || { top: 0, right: 0, bottom: 0, left: 0 };
   const borderRadius = settings.borderRadius || { top: 0, bottom: 0 };
@@ -25,8 +30,8 @@ export function renderRow(row: RowBlock, context: RenderContext): string {
         <td style="${rowStyle}">
     <![endif]-->
     <div style="${rowStyle}; font-size: 0; text-align: ${
-    settings.align || "center"
-  };">
+      settings.align || "center"
+    };">
       <!--[if mso]>
       <table width="100%" border="0" cellpadding="0" cellspacing="0" role="presentation">
         <tr>

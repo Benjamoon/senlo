@@ -8,6 +8,7 @@ import { useDraggable } from "@dnd-kit/core";
 import { BlockDropZones } from "../block-drop-zones/block-drop-zones";
 import { BlockViewMenu } from "../block-view-menu/block-view-menu";
 import type { JSX } from "react";
+import { GitBranch } from "lucide-react";
 import {
   DEFAULT_BUTTON_BG_COLOR,
   DEFAULT_BUTTON_COLOR,
@@ -61,9 +62,10 @@ export const BlockView = ({ block, columnId, rowId }: BlockViewProps) => {
   const previewContact = useEditorStore((s) => s.previewContact);
 
   const renderText = (text: string) => {
-    const processedText = previewMode 
+    const processedText = previewMode
       ? replaceMergeTags(text, {
           contact: previewContact || {},
+          custom: previewContact || {}, // Support custom variables in canvas preview
           project: { name: "Sample Project" },
           campaign: { name: "Sample Campaign" },
           unsubscribeUrl: "https://senlo.io/unsubscribe/sample-token",
@@ -107,7 +109,7 @@ export const BlockView = ({ block, columnId, rowId }: BlockViewProps) => {
         sourceColumnId: columnId,
         sourceRowId: rowId,
         blockType: block.type,
-        blockData: block
+        blockData: block,
       },
       label: getBlockLabel(block),
     },
@@ -129,7 +131,7 @@ export const BlockView = ({ block, columnId, rowId }: BlockViewProps) => {
     block.type === "spacer" && styles.spacerBlock,
     block.type === "list" && styles.listBlock,
     block.type === "divider" && styles.dividerBlock,
-    block.type === "product-line" && styles.productLineBlock
+    block.type === "product-line" && styles.productLineBlock,
   );
 
   const commonProps = {
@@ -150,28 +152,45 @@ export const BlockView = ({ block, columnId, rowId }: BlockViewProps) => {
           <div {...commonProps}>
             <HeadingTag
               className={styles.heading}
-              style={{ 
+              style={{
                 textAlign: block.data.align || "left",
                 color: block.data.color,
-                fontSize: (block.data.fontSize && !isNaN(block.data.fontSize)) 
-                  ? `${block.data.fontSize}px` 
-                  : undefined,
-                lineHeight: (block.data.lineHeight && !isNaN(block.data.lineHeight)) 
-                  ? block.data.lineHeight 
-                  : undefined,
+                fontSize:
+                  block.data.fontSize && !isNaN(block.data.fontSize)
+                    ? `${block.data.fontSize}px`
+                    : undefined,
+                lineHeight:
+                  block.data.lineHeight && !isNaN(block.data.lineHeight)
+                    ? block.data.lineHeight
+                    : undefined,
                 fontWeight: block.data.fontWeight,
                 textTransform: block.data.textTransform,
-                letterSpacing: block.data.letterSpacing !== undefined ? `${block.data.letterSpacing}px` : undefined,
-                paddingTop: block.data.padding?.top !== undefined ? `${block.data.padding.top}px` : "10px",
-                paddingRight: block.data.padding?.right !== undefined ? `${block.data.padding.right}px` : "10px",
-                paddingBottom: block.data.padding?.bottom !== undefined ? `${block.data.padding.bottom}px` : "10px",
-                paddingLeft: block.data.padding?.left !== undefined ? `${block.data.padding.left}px` : "10px",
+                letterSpacing:
+                  block.data.letterSpacing !== undefined
+                    ? `${block.data.letterSpacing}px`
+                    : undefined,
+                paddingTop:
+                  block.data.padding?.top !== undefined
+                    ? `${block.data.padding.top}px`
+                    : "10px",
+                paddingRight:
+                  block.data.padding?.right !== undefined
+                    ? `${block.data.padding.right}px`
+                    : "10px",
+                paddingBottom:
+                  block.data.padding?.bottom !== undefined
+                    ? `${block.data.padding.bottom}px`
+                    : "10px",
+                paddingLeft:
+                  block.data.padding?.left !== undefined
+                    ? `${block.data.padding.left}px`
+                    : "10px",
               }}
             >
               {block.data.href ? (
-                <a 
-                  href={block.data.href} 
-                  target="_blank" 
+                <a
+                  href={block.data.href}
+                  target="_blank"
                   rel="noreferrer"
                   style={{ color: "inherit", textDecoration: "none" }}
                   onClick={(e) => e.preventDefault()} // Prevent navigation in editor
@@ -191,28 +210,45 @@ export const BlockView = ({ block, columnId, rowId }: BlockViewProps) => {
           <div {...commonProps}>
             <p
               className={styles.paragraph}
-              style={{ 
+              style={{
                 textAlign: block.data.align || "left",
                 color: block.data.color,
-                fontSize: (block.data.fontSize && !isNaN(block.data.fontSize)) 
-                  ? `${block.data.fontSize}px` 
-                  : undefined,
-                lineHeight: (block.data.lineHeight && !isNaN(block.data.lineHeight)) 
-                  ? block.data.lineHeight 
-                  : undefined,
+                fontSize:
+                  block.data.fontSize && !isNaN(block.data.fontSize)
+                    ? `${block.data.fontSize}px`
+                    : undefined,
+                lineHeight:
+                  block.data.lineHeight && !isNaN(block.data.lineHeight)
+                    ? block.data.lineHeight
+                    : undefined,
                 fontWeight: block.data.fontWeight,
                 textTransform: block.data.textTransform,
-                letterSpacing: block.data.letterSpacing !== undefined ? `${block.data.letterSpacing}px` : undefined,
-                paddingTop: block.data.padding?.top !== undefined ? `${block.data.padding.top}px` : "10px",
-                paddingRight: block.data.padding?.right !== undefined ? `${block.data.padding.right}px` : "10px",
-                paddingBottom: block.data.padding?.bottom !== undefined ? `${block.data.padding.bottom}px` : "10px",
-                paddingLeft: block.data.padding?.left !== undefined ? `${block.data.padding.left}px` : "10px",
+                letterSpacing:
+                  block.data.letterSpacing !== undefined
+                    ? `${block.data.letterSpacing}px`
+                    : undefined,
+                paddingTop:
+                  block.data.padding?.top !== undefined
+                    ? `${block.data.padding.top}px`
+                    : "10px",
+                paddingRight:
+                  block.data.padding?.right !== undefined
+                    ? `${block.data.padding.right}px`
+                    : "10px",
+                paddingBottom:
+                  block.data.padding?.bottom !== undefined
+                    ? `${block.data.padding.bottom}px`
+                    : "10px",
+                paddingLeft:
+                  block.data.padding?.left !== undefined
+                    ? `${block.data.padding.left}px`
+                    : "10px",
               }}
             >
               {block.data.href ? (
-                <a 
-                  href={block.data.href} 
-                  target="_blank" 
+                <a
+                  href={block.data.href}
+                  target="_blank"
                   rel="noreferrer"
                   style={{ color: "inherit", textDecoration: "none" }}
                   onClick={(e) => e.preventDefault()} // Prevent navigation in editor
@@ -228,15 +264,27 @@ export const BlockView = ({ block, columnId, rowId }: BlockViewProps) => {
 
       case "image":
         return (
-          <div 
+          <div
             {...commonProps}
-            style={{ 
+            style={{
               ...commonProps.style,
               textAlign: block.data.align || DEFAULT_IMAGE_ALIGN,
-              paddingTop: block.data.padding?.top !== undefined ? `${block.data.padding.top}px` : `${DEFAULT_IMAGE_PADDING.top}px`,
-              paddingRight: block.data.padding?.right !== undefined ? `${block.data.padding.right}px` : `${DEFAULT_IMAGE_PADDING.right}px`,
-              paddingBottom: block.data.padding?.bottom !== undefined ? `${block.data.padding.bottom}px` : `${DEFAULT_IMAGE_PADDING.bottom}px`,
-              paddingLeft: block.data.padding?.left !== undefined ? `${block.data.padding.left}px` : `${DEFAULT_IMAGE_PADDING.left}px`,
+              paddingTop:
+                block.data.padding?.top !== undefined
+                  ? `${block.data.padding.top}px`
+                  : `${DEFAULT_IMAGE_PADDING.top}px`,
+              paddingRight:
+                block.data.padding?.right !== undefined
+                  ? `${block.data.padding.right}px`
+                  : `${DEFAULT_IMAGE_PADDING.right}px`,
+              paddingBottom:
+                block.data.padding?.bottom !== undefined
+                  ? `${block.data.padding.bottom}px`
+                  : `${DEFAULT_IMAGE_PADDING.bottom}px`,
+              paddingLeft:
+                block.data.padding?.left !== undefined
+                  ? `${block.data.padding.left}px`
+                  : `${DEFAULT_IMAGE_PADDING.left}px`,
             }}
           >
             <a
@@ -247,17 +295,32 @@ export const BlockView = ({ block, columnId, rowId }: BlockViewProps) => {
               onClick={(e) => e.preventDefault()}
             >
               <img
-                src={block.data.src || "https://via.placeholder.com/300x150?text=No+Image"}
+                src={
+                  block.data.src ||
+                  "https://via.placeholder.com/300x150?text=No+Image"
+                }
                 alt={block.data.alt || ""}
                 style={{
-                  width: block.data.fullWidth ? "100%" : (block.data.width ? `${block.data.width}px` : "auto"),
+                  width: block.data.fullWidth
+                    ? "100%"
+                    : block.data.width
+                      ? `${block.data.width}px`
+                      : "auto",
                   height: "auto",
                   maxWidth: "100%",
                   display: "inline-block",
-                  borderRadius: block.data.borderRadius !== undefined ? `${block.data.borderRadius}px` : `${DEFAULT_IMAGE_BORDER_RADIUS}px`,
-                  borderStyle: block.data.border?.style || DEFAULT_IMAGE_BORDER.style,
-                  borderWidth: block.data.border?.width !== undefined ? `${block.data.border.width}px` : `${DEFAULT_IMAGE_BORDER.width}px`,
-                  borderColor: block.data.border?.color || DEFAULT_IMAGE_BORDER.color,
+                  borderRadius:
+                    block.data.borderRadius !== undefined
+                      ? `${block.data.borderRadius}px`
+                      : `${DEFAULT_IMAGE_BORDER_RADIUS}px`,
+                  borderStyle:
+                    block.data.border?.style || DEFAULT_IMAGE_BORDER.style,
+                  borderWidth:
+                    block.data.border?.width !== undefined
+                      ? `${block.data.border.width}px`
+                      : `${DEFAULT_IMAGE_BORDER.width}px`,
+                  borderColor:
+                    block.data.border?.color || DEFAULT_IMAGE_BORDER.color,
                 }}
               />
             </a>
@@ -266,11 +329,11 @@ export const BlockView = ({ block, columnId, rowId }: BlockViewProps) => {
 
       case "button":
         return (
-          <div 
-            {...commonProps} 
-            style={{ 
+          <div
+            {...commonProps}
+            style={{
               ...commonProps.style,
-              textAlign: block.data.align || "center" 
+              textAlign: block.data.align || "center",
             }}
           >
             <a
@@ -280,24 +343,50 @@ export const BlockView = ({ block, columnId, rowId }: BlockViewProps) => {
               rel="noreferrer"
               onClick={(e) => e.preventDefault()}
               style={{
-                backgroundColor: block.data.backgroundColor || DEFAULT_BUTTON_BG_COLOR,
+                backgroundColor:
+                  block.data.backgroundColor || DEFAULT_BUTTON_BG_COLOR,
                 color: block.data.color || DEFAULT_BUTTON_COLOR,
-                fontSize: block.data.fontSize ? `${block.data.fontSize}px` : `${DEFAULT_BUTTON_FONT_SIZE}px`,
+                fontSize: block.data.fontSize
+                  ? `${block.data.fontSize}px`
+                  : `${DEFAULT_BUTTON_FONT_SIZE}px`,
                 fontWeight: block.data.fontWeight || DEFAULT_BUTTON_FONT_WEIGHT,
-                borderRadius: block.data.borderRadius !== undefined ? `${block.data.borderRadius}px` : `${DEFAULT_BUTTON_BORDER_RADIUS}px`,
-                letterSpacing: block.data.letterSpacing !== undefined ? `${block.data.letterSpacing}px` : undefined,
+                borderRadius:
+                  block.data.borderRadius !== undefined
+                    ? `${block.data.borderRadius}px`
+                    : `${DEFAULT_BUTTON_BORDER_RADIUS}px`,
+                letterSpacing:
+                  block.data.letterSpacing !== undefined
+                    ? `${block.data.letterSpacing}px`
+                    : undefined,
                 textTransform: block.data.textTransform || "none",
-                paddingTop: block.data.padding?.top !== undefined ? `${block.data.padding.top}px` : `${DEFAULT_BUTTON_PADDING.top}px`,
-                paddingRight: block.data.padding?.right !== undefined ? `${block.data.padding.right}px` : `${DEFAULT_BUTTON_PADDING.right}px`,
-                paddingBottom: block.data.padding?.bottom !== undefined ? `${block.data.padding.bottom}px` : `${DEFAULT_BUTTON_PADDING.bottom}px`,
-                paddingLeft: block.data.padding?.left !== undefined ? `${block.data.padding.left}px` : `${DEFAULT_BUTTON_PADDING.left}px`,
+                paddingTop:
+                  block.data.padding?.top !== undefined
+                    ? `${block.data.padding.top}px`
+                    : `${DEFAULT_BUTTON_PADDING.top}px`,
+                paddingRight:
+                  block.data.padding?.right !== undefined
+                    ? `${block.data.padding.right}px`
+                    : `${DEFAULT_BUTTON_PADDING.right}px`,
+                paddingBottom:
+                  block.data.padding?.bottom !== undefined
+                    ? `${block.data.padding.bottom}px`
+                    : `${DEFAULT_BUTTON_PADDING.bottom}px`,
+                paddingLeft:
+                  block.data.padding?.left !== undefined
+                    ? `${block.data.padding.left}px`
+                    : `${DEFAULT_BUTTON_PADDING.left}px`,
                 display: block.data.fullWidth ? "block" : "inline-block",
                 width: block.data.fullWidth ? "100%" : "auto",
                 boxSizing: "border-box",
-                borderStyle: block.data.border?.style || DEFAULT_BUTTON_BORDER.style,
-                borderWidth: block.data.border?.width !== undefined ? `${block.data.border.width}px` : `${DEFAULT_BUTTON_BORDER.width}px`,
-                borderColor: block.data.border?.color || DEFAULT_BUTTON_BORDER.color,
-                boxShadow: block.data.shadow 
+                borderStyle:
+                  block.data.border?.style || DEFAULT_BUTTON_BORDER.style,
+                borderWidth:
+                  block.data.border?.width !== undefined
+                    ? `${block.data.border.width}px`
+                    : `${DEFAULT_BUTTON_BORDER.width}px`,
+                borderColor:
+                  block.data.border?.color || DEFAULT_BUTTON_BORDER.color,
+                boxShadow: block.data.shadow
                   ? `${block.data.shadow.x || 0}px ${block.data.shadow.y || 0}px ${block.data.shadow.blur || 0}px ${block.data.shadow.color || "#000000"}`
                   : "none",
               }}
@@ -311,9 +400,9 @@ export const BlockView = ({ block, columnId, rowId }: BlockViewProps) => {
         return (
           <div
             {...commonProps}
-            style={{ 
+            style={{
               ...commonProps.style,
-              height: `${block.data.height}px` 
+              height: `${block.data.height}px`,
             }}
           />
         );
@@ -327,7 +416,8 @@ export const BlockView = ({ block, columnId, rowId }: BlockViewProps) => {
               style={{
                 textAlign: block.data.align || "left",
                 color: block.data.color,
-                listStyleType: block.data.listType === "ordered" ? "decimal" : "disc",
+                listStyleType:
+                  block.data.listType === "ordered" ? "decimal" : "disc",
                 fontSize: block.data.fontSize
                   ? `${block.data.fontSize}px`
                   : `${DEFAULT_LIST_FONT_SIZE}px`,
@@ -335,10 +425,22 @@ export const BlockView = ({ block, columnId, rowId }: BlockViewProps) => {
                   ? block.data.lineHeight
                   : DEFAULT_LIST_LINE_HEIGHT,
                 fontWeight: block.data.fontWeight || DEFAULT_LIST_FONT_WEIGHT,
-                paddingTop: block.data.padding?.top !== undefined ? `${block.data.padding.top}px` : `${DEFAULT_LIST_PADDING.top}px`,
-                paddingRight: block.data.padding?.right !== undefined ? `${block.data.padding.right}px` : `${DEFAULT_LIST_PADDING.right}px`,
-                paddingBottom: block.data.padding?.bottom !== undefined ? `${block.data.padding.bottom}px` : `${DEFAULT_LIST_PADDING.bottom}px`,
-                paddingLeft: block.data.padding?.left !== undefined ? `${block.data.padding.left}px` : `${DEFAULT_LIST_PADDING.left}px`,
+                paddingTop:
+                  block.data.padding?.top !== undefined
+                    ? `${block.data.padding.top}px`
+                    : `${DEFAULT_LIST_PADDING.top}px`,
+                paddingRight:
+                  block.data.padding?.right !== undefined
+                    ? `${block.data.padding.right}px`
+                    : `${DEFAULT_LIST_PADDING.right}px`,
+                paddingBottom:
+                  block.data.padding?.bottom !== undefined
+                    ? `${block.data.padding.bottom}px`
+                    : `${DEFAULT_LIST_PADDING.bottom}px`,
+                paddingLeft:
+                  block.data.padding?.left !== undefined
+                    ? `${block.data.padding.left}px`
+                    : `${DEFAULT_LIST_PADDING.left}px`,
               }}
             >
               {block.data.items.map((item: string, index: number) => (
@@ -351,23 +453,36 @@ export const BlockView = ({ block, columnId, rowId }: BlockViewProps) => {
 
       case "divider":
         return (
-          <div 
+          <div
             {...commonProps}
             style={{
               ...commonProps.style,
               textAlign: block.data.align || DEFAULT_DIVIDER_ALIGN,
-              paddingTop: block.data.padding?.top !== undefined ? `${block.data.padding.top}px` : `${DEFAULT_DIVIDER_PADDING.top}px`,
-              paddingRight: block.data.padding?.right !== undefined ? `${block.data.padding.right}px` : `${DEFAULT_DIVIDER_PADDING.right}px`,
-              paddingBottom: block.data.padding?.bottom !== undefined ? `${block.data.padding.bottom}px` : `${DEFAULT_DIVIDER_PADDING.bottom}px`,
-              paddingLeft: block.data.padding?.left !== undefined ? `${block.data.padding.left}px` : `${DEFAULT_DIVIDER_PADDING.left}px`,
+              paddingTop:
+                block.data.padding?.top !== undefined
+                  ? `${block.data.padding.top}px`
+                  : `${DEFAULT_DIVIDER_PADDING.top}px`,
+              paddingRight:
+                block.data.padding?.right !== undefined
+                  ? `${block.data.padding.right}px`
+                  : `${DEFAULT_DIVIDER_PADDING.right}px`,
+              paddingBottom:
+                block.data.padding?.bottom !== undefined
+                  ? `${block.data.padding.bottom}px`
+                  : `${DEFAULT_DIVIDER_PADDING.bottom}px`,
+              paddingLeft:
+                block.data.padding?.left !== undefined
+                  ? `${block.data.padding.left}px`
+                  : `${DEFAULT_DIVIDER_PADDING.left}px`,
             }}
           >
-            <div 
+            <div
               className={styles.divider}
               style={{
                 width: `${block.data.width || DEFAULT_DIVIDER_WIDTH}%`,
                 borderTopWidth: `${block.data.borderWidth || DEFAULT_DIVIDER_BORDER_WIDTH}px`,
-                borderTopStyle: block.data.borderStyle || DEFAULT_DIVIDER_BORDER_STYLE,
+                borderTopStyle:
+                  block.data.borderStyle || DEFAULT_DIVIDER_BORDER_STYLE,
                 borderTopColor: block.data.color || DEFAULT_DIVIDER_COLOR,
               }}
             />
@@ -376,57 +491,93 @@ export const BlockView = ({ block, columnId, rowId }: BlockViewProps) => {
 
       case "product-line":
         return (
-          <div 
+          <div
             {...commonProps}
             style={{
               ...commonProps.style,
-              paddingTop: block.data.padding?.top !== undefined ? `${block.data.padding.top}px` : `${DEFAULT_PRODUCT_LINE_PADDING.top}px`,
-              paddingRight: block.data.padding?.right !== undefined ? `${block.data.padding.right}px` : `${DEFAULT_PRODUCT_LINE_PADDING.right}px`,
-              paddingBottom: block.data.padding?.bottom !== undefined ? `${block.data.padding.bottom}px` : `${DEFAULT_PRODUCT_LINE_PADDING.bottom}px`,
-              paddingLeft: block.data.padding?.left !== undefined ? `${block.data.padding.left}px` : `${DEFAULT_PRODUCT_LINE_PADDING.left}px`,
+              paddingTop:
+                block.data.padding?.top !== undefined
+                  ? `${block.data.padding.top}px`
+                  : `${DEFAULT_PRODUCT_LINE_PADDING.top}px`,
+              paddingRight:
+                block.data.padding?.right !== undefined
+                  ? `${block.data.padding.right}px`
+                  : `${DEFAULT_PRODUCT_LINE_PADDING.right}px`,
+              paddingBottom:
+                block.data.padding?.bottom !== undefined
+                  ? `${block.data.padding.bottom}px`
+                  : `${DEFAULT_PRODUCT_LINE_PADDING.bottom}px`,
+              paddingLeft:
+                block.data.padding?.left !== undefined
+                  ? `${block.data.padding.left}px`
+                  : `${DEFAULT_PRODUCT_LINE_PADDING.left}px`,
             }}
           >
             <div className={styles.productLine}>
-              <table 
-                role="presentation" 
-                style={{ 
-                  width: "100%", 
+              <table
+                role="presentation"
+                style={{
+                  width: "100%",
                   borderCollapse: "collapse",
-                  borderSpacing: 0 
+                  borderSpacing: 0,
                 }}
               >
                 <tbody>
                   <tr>
-                  <td 
-                    style={{
-                      textAlign: "left",
-                      fontFamily: block.data.leftStyle?.fontFamily || DEFAULT_PRODUCT_LINE_LEFT_STYLE.fontFamily,
-                      fontSize: block.data.leftStyle?.fontSize ? `${block.data.leftStyle.fontSize}px` : `${DEFAULT_PRODUCT_LINE_LEFT_STYLE.fontSize}px`,
-                      lineHeight: block.data.leftStyle?.lineHeight || DEFAULT_PRODUCT_LINE_LEFT_STYLE.lineHeight,
-                      color: block.data.leftStyle?.color || DEFAULT_PRODUCT_LINE_LEFT_STYLE.color,
-                      fontWeight: block.data.leftStyle?.fontWeight || DEFAULT_PRODUCT_LINE_LEFT_STYLE.fontWeight,
-                      verticalAlign: "top",
-                      padding: 0,
-                    }}
-                  >
-                    {renderText(block.data.leftText || DEFAULT_PRODUCT_LINE_LEFT_TEXT)}
-                  </td>
-                  <td 
-                    style={{
-                      textAlign: "right",
-                      width: `${block.data.rightWidth || DEFAULT_PRODUCT_LINE_RIGHT_WIDTH}px`,
-                      fontFamily: block.data.rightStyle?.fontFamily || DEFAULT_PRODUCT_LINE_RIGHT_STYLE.fontFamily,
-                      fontSize: block.data.rightStyle?.fontSize ? `${block.data.rightStyle.fontSize}px` : `${DEFAULT_PRODUCT_LINE_RIGHT_STYLE.fontSize}px`,
-                      lineHeight: block.data.rightStyle?.lineHeight || DEFAULT_PRODUCT_LINE_RIGHT_STYLE.lineHeight,
-                      color: block.data.rightStyle?.color || DEFAULT_PRODUCT_LINE_RIGHT_STYLE.color,
-                      fontWeight: block.data.rightStyle?.fontWeight || DEFAULT_PRODUCT_LINE_RIGHT_STYLE.fontWeight,
-                      whiteSpace: "nowrap",
-                      verticalAlign: "top",
-                      padding: 0,
-                    }}
-                  >
-                    {renderText(block.data.rightText || DEFAULT_PRODUCT_LINE_RIGHT_TEXT)}
-                  </td>
+                    <td
+                      style={{
+                        textAlign: "left",
+                        fontFamily:
+                          block.data.leftStyle?.fontFamily ||
+                          DEFAULT_PRODUCT_LINE_LEFT_STYLE.fontFamily,
+                        fontSize: block.data.leftStyle?.fontSize
+                          ? `${block.data.leftStyle.fontSize}px`
+                          : `${DEFAULT_PRODUCT_LINE_LEFT_STYLE.fontSize}px`,
+                        lineHeight:
+                          block.data.leftStyle?.lineHeight ||
+                          DEFAULT_PRODUCT_LINE_LEFT_STYLE.lineHeight,
+                        color:
+                          block.data.leftStyle?.color ||
+                          DEFAULT_PRODUCT_LINE_LEFT_STYLE.color,
+                        fontWeight:
+                          block.data.leftStyle?.fontWeight ||
+                          DEFAULT_PRODUCT_LINE_LEFT_STYLE.fontWeight,
+                        verticalAlign: "top",
+                        padding: 0,
+                      }}
+                    >
+                      {renderText(
+                        block.data.leftText || DEFAULT_PRODUCT_LINE_LEFT_TEXT,
+                      )}
+                    </td>
+                    <td
+                      style={{
+                        textAlign: "right",
+                        width: `${block.data.rightWidth || DEFAULT_PRODUCT_LINE_RIGHT_WIDTH}px`,
+                        fontFamily:
+                          block.data.rightStyle?.fontFamily ||
+                          DEFAULT_PRODUCT_LINE_RIGHT_STYLE.fontFamily,
+                        fontSize: block.data.rightStyle?.fontSize
+                          ? `${block.data.rightStyle.fontSize}px`
+                          : `${DEFAULT_PRODUCT_LINE_RIGHT_STYLE.fontSize}px`,
+                        lineHeight:
+                          block.data.rightStyle?.lineHeight ||
+                          DEFAULT_PRODUCT_LINE_RIGHT_STYLE.lineHeight,
+                        color:
+                          block.data.rightStyle?.color ||
+                          DEFAULT_PRODUCT_LINE_RIGHT_STYLE.color,
+                        fontWeight:
+                          block.data.rightStyle?.fontWeight ||
+                          DEFAULT_PRODUCT_LINE_RIGHT_STYLE.fontWeight,
+                        whiteSpace: "nowrap",
+                        verticalAlign: "top",
+                        padding: 0,
+                      }}
+                    >
+                      {renderText(
+                        block.data.rightText || DEFAULT_PRODUCT_LINE_RIGHT_TEXT,
+                      )}
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -440,18 +591,34 @@ export const BlockView = ({ block, columnId, rowId }: BlockViewProps) => {
             {...commonProps}
             style={{
               ...commonProps.style,
-              paddingTop: block.data.padding?.top !== undefined ? `${block.data.padding.top}px` : "10px",
-              paddingRight: block.data.padding?.right !== undefined ? `${block.data.padding.right}px` : "0px",
-              paddingBottom: block.data.padding?.bottom !== undefined ? `${block.data.padding.bottom}px` : "10px",
-              paddingLeft: block.data.padding?.left !== undefined ? `${block.data.padding.left}px` : "0px",
+              paddingTop:
+                block.data.padding?.top !== undefined
+                  ? `${block.data.padding.top}px`
+                  : "10px",
+              paddingRight:
+                block.data.padding?.right !== undefined
+                  ? `${block.data.padding.right}px`
+                  : "0px",
+              paddingBottom:
+                block.data.padding?.bottom !== undefined
+                  ? `${block.data.padding.bottom}px`
+                  : "10px",
+              paddingLeft:
+                block.data.padding?.left !== undefined
+                  ? `${block.data.padding.left}px`
+                  : "0px",
             }}
           >
-            <div 
+            <div
               style={{
                 textAlign: block.data.align || "center",
                 display: "flex",
-                justifyContent: block.data.align === "left" ? "flex-start" : 
-                                block.data.align === "right" ? "flex-end" : "center",
+                justifyContent:
+                  block.data.align === "left"
+                    ? "flex-start"
+                    : block.data.align === "right"
+                      ? "flex-end"
+                      : "center",
                 gap: `${block.data.spacing || 10}px`,
                 flexWrap: "wrap",
               }}
@@ -503,10 +670,19 @@ export const BlockView = ({ block, columnId, rowId }: BlockViewProps) => {
 
   return (
     <div style={{ position: "relative" }}>
-      {renderBlockContent()}
-      {isDragActive && (activeDragType === "block" || activeDragType === "content") && (
-        <BlockDropZones blockId={block.id} columnId={columnId} />
+      {block.condition && (
+        <div
+          className="absolute top-1 right-2 z-10 bg-blue-500 text-white p-1 rounded-full shadow-sm"
+          title={`Condition: ${block.condition.variable} ${block.condition.operator} ${block.condition.value ?? ""}`}
+        >
+          <GitBranch size={10} />
+        </div>
       )}
+      {renderBlockContent()}
+      {isDragActive &&
+        (activeDragType === "block" || activeDragType === "content") && (
+          <BlockDropZones blockId={block.id} columnId={columnId} />
+        )}
       {isSelected && !isDragActive && (
         <BlockViewMenu blockId={block.id} columnId={columnId} />
       )}

@@ -26,6 +26,7 @@ import {
   ExpandButton,
 } from "../textarea-expanded-modal";
 import { useMemo, useState } from "react";
+import { ConditionSection } from "./condition-section";
 import {
   DEFAULT_PRODUCT_LINE_LEFT_TEXT,
   DEFAULT_PRODUCT_LINE_RIGHT_TEXT,
@@ -306,6 +307,8 @@ export const ProductLineSection = ({ block }: ProductLineSectionProps) => {
           )}
         />
       </FormSection>
+
+      <ConditionSection control={control} setValue={setValue} />
     </FormSection>
   );
 };

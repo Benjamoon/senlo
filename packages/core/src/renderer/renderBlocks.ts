@@ -1,11 +1,16 @@
 import { ContentBlock } from "../emailDesign";
 import { RenderContext } from "./types";
 import { renderPadding, normalizeUrl } from "./utils";
+import { evaluateCondition } from "./conditions";
 
 export function renderBlock(
   block: ContentBlock,
-  context: RenderContext
+  context: RenderContext,
 ): string {
+  if (!evaluateCondition(block.condition, context)) {
+    return "";
+  }
+
   switch (block.type) {
     case "heading":
       return renderHeading(block);
@@ -258,9 +263,7 @@ function renderProductLine(block: any): string {
   const leftStyle = data.leftStyle || {};
   const rightStyle = data.rightStyle || {};
 
-  const containerStyle = [
-    `padding: ${renderPadding(data.padding)}`,
-  ].join("; ");
+  const containerStyle = [`padding: ${renderPadding(data.padding)}`].join("; ");
 
   const tableStyle = [
     `width: 100%`,
@@ -270,11 +273,11 @@ function renderProductLine(block: any): string {
 
   const leftCellStyle = [
     `text-align: left`,
-    `font-family: ${leftStyle.fontFamily || 'Arial, sans-serif'}`,
+    `font-family: ${leftStyle.fontFamily || "Arial, sans-serif"}`,
     `font-size: ${leftStyle.fontSize || 14}px`,
     `line-height: ${leftStyle.lineHeight || 1.4}`,
-    `color: ${leftStyle.color || '#000000'}`,
-    `font-weight: ${leftStyle.fontWeight || 'normal'}`,
+    `color: ${leftStyle.color || "#000000"}`,
+    `font-weight: ${leftStyle.fontWeight || "normal"}`,
     `vertical-align: top`,
     `padding: 0`,
   ].join("; ");
@@ -282,11 +285,11 @@ function renderProductLine(block: any): string {
   const rightCellStyle = [
     `text-align: right`,
     `width: ${data.rightWidth || 120}px`,
-    `font-family: ${rightStyle.fontFamily || 'Arial, sans-serif'}`,
+    `font-family: ${rightStyle.fontFamily || "Arial, sans-serif"}`,
     `font-size: ${rightStyle.fontSize || 14}px`,
     `line-height: ${rightStyle.lineHeight || 1.4}`,
-    `color: ${rightStyle.color || '#000000'}`,
-    `font-weight: ${rightStyle.fontWeight || 'normal'}`,
+    `color: ${rightStyle.color || "#000000"}`,
+    `font-weight: ${rightStyle.fontWeight || "normal"}`,
     `white-space: nowrap`,
     `vertical-align: top`,
     `padding: 0`,
@@ -298,10 +301,10 @@ function renderProductLine(block: any): string {
         <tbody>
           <tr>
             <td style="${leftCellStyle}">
-              ${data.leftText || ''}
+              ${data.leftText || ""}
             </td>
             <td style="${rightCellStyle}">
-              ${data.rightText || ''}
+              ${data.rightText || ""}
             </td>
           </tr>
         </tbody>

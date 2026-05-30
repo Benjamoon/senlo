@@ -29,6 +29,7 @@ import {
   SOCIAL_ICONS,
 } from "./defaults/socials";
 import { SocialLinksList } from "./social-links-list";
+import { ConditionSection } from "./condition-section";
 
 interface SocialsSectionProps {
   block: SocialsBlock;
@@ -206,6 +207,8 @@ export const SocialsSection = ({ block }: SocialsSectionProps) => {
           )}
         />
       </FormSection>
+
+      <ConditionSection control={control} setValue={setValue} />
     </FormSection>
   );
 };

@@ -32,6 +32,7 @@ import {
   ExpandButton,
 } from "../textarea-expanded-modal";
 import { useState } from "react";
+import { ConditionSection } from "./condition-section";
 
 interface ListSectionProps {
   block: ListBlock;
@@ -228,6 +229,8 @@ export const ListSection = memo(({ block }: ListSectionProps) => {
           )}
         />
       </FormSection>
+
+      <ConditionSection control={control} setValue={setValue} />
     </FormSection>
   );
 });

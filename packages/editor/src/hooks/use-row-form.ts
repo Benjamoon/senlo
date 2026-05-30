@@ -5,7 +5,6 @@ import { z } from "zod";
 import { useEditorStore } from "../state/editor.store";
 import { RowBlock, rowBlockSchema } from "@senlo/core";
 
-// We only want to edit the settings of the row
 const rowSettingsSchema = rowBlockSchema.shape.settings;
 type RowSettings = z.infer<typeof rowSettingsSchema>;
 
@@ -15,8 +14,10 @@ interface UseRowFormProps {
 
 export const useRowForm = ({ row }: UseRowFormProps) => {
   const updateRow = useEditorStore((s) => s.updateRow);
-  const updateRowWithoutHistory = useEditorStore((s) => s.updateRowWithoutHistory);
-  
+  const updateRowWithoutHistory = useEditorStore(
+    (s) => s.updateRowWithoutHistory,
+  );
+
   const {
     register,
     control,
@@ -24,9 +25,17 @@ export const useRowForm = ({ row }: UseRowFormProps) => {
     formState: { errors },
     setValue,
     getValues,
-  } = useForm<RowSettings>({
-    resolver: zodResolver(rowSettingsSchema as any),
-    defaultValues: row.settings,
+  } = useForm<RowSettings & { condition?: RowBlock["condition"] }>({
+    resolver: zodResolver(
+      z.object({
+        ...(rowSettingsSchema as any)._def.innerType.unwrap().shape,
+        condition: rowBlockSchema.shape.condition,
+      }) as any,
+    ),
+    defaultValues: {
+      ...row.settings,
+      condition: row.condition,
+    } as any,
     mode: "onChange",
   });
 
@@ -36,8 +45,11 @@ export const useRowForm = ({ row }: UseRowFormProps) => {
 
   useEffect(() => {
     isFirstRender.current = true;
-    reset(row.settings);
-  }, [row.id, reset, row.settings]);
+    reset({
+      ...row.settings,
+      condition: row.condition,
+    } as any);
+  }, [row.id, reset, row.settings, row.condition]);
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -45,25 +57,16 @@ export const useRowForm = ({ row }: UseRowFormProps) => {
       return;
     }
 
-    const hasChanges = Object.entries(formData).some(([key, value]) => {
-      return JSON.stringify(row.settings[key as keyof typeof row.settings]) !== JSON.stringify(value);
-    });
+    const { condition, ...settings } = formData as any;
 
-    if (!hasChanges) {
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
-      }
-      return;
-    }
-
-    updateRowWithoutHistory(row.id, formData as RowSettings);
+    updateRowWithoutHistory(row.id, settings, condition);
 
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
     }
 
     debounceTimer.current = setTimeout(() => {
-      updateRow(row.id, formData as RowSettings);
+      updateRow(row.id, settings, condition);
     }, 500);
 
     return () => {
@@ -81,8 +84,3 @@ export const useRowForm = ({ row }: UseRowFormProps) => {
     getValues,
   };
 };
-
-
-
-
-

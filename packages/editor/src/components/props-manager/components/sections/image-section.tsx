@@ -35,6 +35,7 @@ import {
   DEFAULT_IMAGE_BORDER,
 } from "./defaults/image";
 import { DEFAULT_PADDING } from "./defaults/common";
+import { ConditionSection } from "./condition-section";
 
 interface ImageSectionProps {
   block: ImageBlock;
@@ -69,7 +70,10 @@ export const ImageSection = ({ block }: ImageSectionProps) => {
       }
 
       const data = await response.json();
-      setValue("src", data.url as any, { shouldValidate: true, shouldDirty: true });
+      setValue("src", data.url as any, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
     } catch (error) {
       console.error("Upload failed", error);
       alert(error instanceof Error ? error.message : "Failed to upload image");
@@ -265,6 +269,8 @@ export const ImageSection = ({ block }: ImageSectionProps) => {
           )}
         />
       </FormSection>
+
+      <ConditionSection control={control} setValue={setValue} />
     </FormSection>
   );
 };

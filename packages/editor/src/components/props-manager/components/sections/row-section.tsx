@@ -12,9 +12,17 @@ import {
   Slider,
   Button,
 } from "@senlo/ui";
-import { AlignLeft, AlignCenter, Maximize2, Minimize2, Link, Link2Off } from "lucide-react";
+import {
+  AlignLeft,
+  AlignCenter,
+  Maximize2,
+  Minimize2,
+  Link,
+  Link2Off,
+} from "lucide-react";
 import { Controller, useWatch } from "react-hook-form";
 import { RowBlock } from "@senlo/core";
+import { ConditionSection } from "./condition-section";
 
 interface RowSectionProps {
   row: RowBlock;
@@ -22,7 +30,7 @@ interface RowSectionProps {
 
 export const RowSection = ({ row }: RowSectionProps) => {
   const { control, errors, setValue, getValues } = useRowForm({ row });
-  
+
   // Инициализируем состояние линковки на основе текущих значений
   const [isLinked, setIsLinked] = useState(() => {
     const radius = row.settings.borderRadius;
@@ -54,11 +62,17 @@ export const RowSection = ({ row }: RowSectionProps) => {
     }
   };
 
-  const borderRadius = useWatch({ control, name: "borderRadius" }) || { top: 0, bottom: 0 };
+  const borderRadius = useWatch({ control, name: "borderRadius" }) || {
+    top: 0,
+    bottom: 0,
+  };
 
   return (
     <FormSection title="Row Settings">
-      <FormField label="Background Color" error={errors.backgroundColor?.message}>
+      <FormField
+        label="Background Color"
+        error={errors.backgroundColor?.message}
+      >
         <Controller
           name="backgroundColor"
           control={control}
@@ -109,8 +123,8 @@ export const RowSection = ({ row }: RowSectionProps) => {
             variant="ghost"
             size="sm"
             className={`h-7 w-7 p-0 flex items-center justify-center rounded transition-all ${
-              isLinked 
-                ? "bg-zinc-100 text-blue-600 border border-zinc-200" 
+              isLinked
+                ? "bg-zinc-100 text-blue-600 border border-zinc-200"
                 : "bg-transparent text-zinc-500 hover:bg-zinc-100"
             }`}
             onClick={() => setIsLinked(!isLinked)}
@@ -163,7 +177,8 @@ export const RowSection = ({ row }: RowSectionProps) => {
           )}
         />
       </FormSection>
+
+      <ConditionSection control={control} setValue={setValue} />
     </FormSection>
   );
 };
-

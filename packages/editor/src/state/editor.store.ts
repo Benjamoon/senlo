@@ -247,11 +247,16 @@ export interface EditorState {
   /** Move a row up or down */
   moveRow: (rowId: RowId, direction: "up" | "down") => void;
   /** Update row settings with history tracking */
-  updateRow: (rowId: RowId, updates: Partial<RowBlock["settings"]>) => void;
+  updateRow: (
+    rowId: RowId,
+    updates: Partial<RowBlock["settings"]>,
+    condition?: RowBlock["condition"],
+  ) => void;
   /** Update row settings without history tracking */
   updateRowWithoutHistory: (
     rowId: RowId,
     updates: Partial<RowBlock["settings"]>,
+    condition?: RowBlock["condition"],
   ) => void;
 
   // Block Actions
@@ -284,11 +289,13 @@ export interface EditorState {
   updateBlock: (
     blockId: ContentBlockId,
     updates: Partial<ContentBlock["data"]>,
+    condition?: ContentBlock["condition"],
   ) => void;
   /** Update block data without history tracking */
   updateBlockWithoutHistory: (
     blockId: ContentBlockId,
     updates: Partial<ContentBlock["data"]>,
+    condition?: ContentBlock["condition"],
   ) => void;
 
   // Callback Setters
@@ -969,7 +976,7 @@ export const useEditorStore = create<EditorState>()(
       });
     },
 
-    updateBlock: (blockId, updates) => {
+    updateBlock: (blockId, updates, condition) => {
       const state = get();
       let currentBlock: ContentBlock | undefined;
 
@@ -984,7 +991,7 @@ export const useEditorStore = create<EditorState>()(
       if (!currentBlock) return;
 
       // Check if there are actual changes
-      const hasChanges = Object.entries(updates).some(([key, value]) => {
+      const dataHasChanges = Object.entries(updates).some(([key, value]) => {
         return (
           JSON.stringify(
             currentBlock?.data[key as keyof typeof currentBlock.data],
@@ -992,56 +999,68 @@ export const useEditorStore = create<EditorState>()(
         );
       });
 
-      if (!hasChanges) return;
+      const conditionHasChanges =
+        JSON.stringify(currentBlock.condition) !== JSON.stringify(condition);
+
+      if (!dataHasChanges && !conditionHasChanges) return;
 
       set((s) => {
         saveToHistory(s);
         const blockResult = findBlock(s.design, blockId);
         if (blockResult) {
           Object.assign(blockResult.block.data, updates);
+          blockResult.block.condition = condition;
         }
       });
     },
 
-    updateBlockWithoutHistory: (blockId, updates) => {
+    updateBlockWithoutHistory: (blockId, updates, condition) => {
       set((s) => {
         const blockResult = findBlock(s.design, blockId);
         if (blockResult) {
           // Update block data with new values without saving to history
           Object.assign(blockResult.block.data, updates);
+          blockResult.block.condition = condition;
         }
       });
     },
 
-    updateRow: (rowId, updates) => {
+    updateRow: (rowId, updates, condition) => {
       const state = get();
       const currentRow = state.design.rows.find((r) => r.id === rowId);
       if (!currentRow) return;
 
-      const hasChanges = Object.entries(updates).some(([key, value]) => {
-        return (
-          JSON.stringify(
-            currentRow.settings[key as keyof typeof currentRow.settings],
-          ) !== JSON.stringify(value)
-        );
-      });
+      const settingsHasChanges = Object.entries(updates).some(
+        ([key, value]) => {
+          return (
+            JSON.stringify(
+              currentRow.settings[key as keyof typeof currentRow.settings],
+            ) !== JSON.stringify(value)
+          );
+        },
+      );
 
-      if (!hasChanges) return;
+      const conditionHasChanges =
+        JSON.stringify(currentRow.condition) !== JSON.stringify(condition);
+
+      if (!settingsHasChanges && !conditionHasChanges) return;
 
       set((s) => {
         saveToHistory(s);
         const row = s.design.rows.find((r) => r.id === rowId);
         if (row) {
           Object.assign(row.settings, updates);
+          row.condition = condition;
         }
       });
     },
 
-    updateRowWithoutHistory: (rowId, updates) => {
+    updateRowWithoutHistory: (rowId, updates, condition) => {
       set((s) => {
         const row = s.design.rows.find((r) => r.id === rowId);
         if (row) {
           Object.assign(row.settings, updates);
+          row.condition = condition;
         }
       });
     },

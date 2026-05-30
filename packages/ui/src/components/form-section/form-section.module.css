@@ -12,6 +12,10 @@
 
 .header {
   margin-bottom: var(--sl-space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sl-space-2);
 }
 
 .title {

@@ -11,13 +11,14 @@ import {
   MAX_SPACER_HEIGHT,
   DEFAULT_SPACER_PADDING,
 } from "./defaults/spacer";
+import { ConditionSection } from "./condition-section";
 
 interface SpacerSectionProps {
   block: SpacerBlock;
 }
 
 export const SpacerSection = ({ block }: SpacerSectionProps) => {
-  const { control } = useBlockForm({
+  const { control, setValue } = useBlockForm({
     block,
     schema: spacerSchema,
   });
@@ -51,6 +52,8 @@ export const SpacerSection = ({ block }: SpacerSectionProps) => {
           )}
         />
       </FormSection>
+
+      <ConditionSection control={control} setValue={setValue} />
     </FormSection>
   );
 };

@@ -28,13 +28,14 @@ import {
   DEFAULT_DIVIDER_BORDER_STYLE,
   DEFAULT_DIVIDER_PADDING,
 } from "./defaults/divider";
+import { ConditionSection } from "./condition-section";
 
 interface DividerSectionProps {
   block: DividerBlock;
 }
 
 export const DividerSection = memo(({ block }: DividerSectionProps) => {
-  const { control, errors } = useBlockForm({
+  const { control, errors, setValue } = useBlockForm({
     block,
     schema: dividerSchema,
   });
@@ -158,6 +159,8 @@ export const DividerSection = memo(({ block }: DividerSectionProps) => {
           )}
         />
       </FormSection>
+
+      <ConditionSection control={control} setValue={setValue} />
     </FormSection>
   );
 });

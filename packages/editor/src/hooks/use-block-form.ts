@@ -15,8 +15,10 @@ export const useBlockForm = <T extends z.ZodTypeAny>({
   schema,
 }: UseBlockFormProps<T>) => {
   const updateBlock = useEditorStore((s) => s.updateBlock);
-  const updateBlockWithoutHistory = useEditorStore((s) => s.updateBlockWithoutHistory);
-  
+  const updateBlockWithoutHistory = useEditorStore(
+    (s) => s.updateBlockWithoutHistory,
+  );
+
   const {
     register,
     control,
@@ -26,7 +28,10 @@ export const useBlockForm = <T extends z.ZodTypeAny>({
     getValues,
   } = useForm<z.infer<T>>({
     resolver: zodResolver(schema as any),
-    defaultValues: block.data as any,
+    defaultValues: {
+      ...block.data,
+      condition: block.condition,
+    } as any,
     mode: "onChange",
   });
 
@@ -38,7 +43,10 @@ export const useBlockForm = <T extends z.ZodTypeAny>({
   // Эффект для сброса формы при переключении между блоками
   useEffect(() => {
     isFirstRender.current = true;
-    reset(block.data);
+    reset({
+      ...block.data,
+      condition: block.condition,
+    } as any);
   }, [block.id, reset]);
 
   // Эффект для автоматической синхронизации со стором
@@ -49,20 +57,11 @@ export const useBlockForm = <T extends z.ZodTypeAny>({
       return;
     }
 
+    // Разделяем данные на контент и условия
+    const { condition, ...data } = formData as any;
+
     // 1. Мгновенное обновление UI (без записи в историю)
-    // Сравниваем данные перед обновлением
-    const hasChanges = Object.entries(formData).some(([key, value]) => {
-      return JSON.stringify(block.data[key as keyof typeof block.data]) !== JSON.stringify(value);
-    });
-
-    if (!hasChanges) {
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
-      }
-      return;
-    }
-
-    updateBlockWithoutHistory(block.id, formData);
+    updateBlockWithoutHistory(block.id, data, condition);
 
     // 2. Дебаунс для записи в историю (Undo/Redo)
     if (debounceTimer.current) {
@@ -70,7 +69,7 @@ export const useBlockForm = <T extends z.ZodTypeAny>({
     }
 
     debounceTimer.current = setTimeout(() => {
-      updateBlock(block.id, formData);
+      updateBlock(block.id, data, condition);
     }, 500);
 
     return () => {
@@ -88,14 +87,3 @@ export const useBlockForm = <T extends z.ZodTypeAny>({
     getValues,
   };
 };
-
-
-
-
-
-
-
-
-
-
-
