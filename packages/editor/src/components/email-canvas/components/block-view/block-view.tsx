@@ -1,7 +1,7 @@
 "use client";
 
 import styles from "./block-view.module.css";
-import { ContentBlock, replaceMergeTags } from "@senlo/core";
+import { ContentBlock, replaceMergeTags, evaluateCondition } from "@senlo/core";
 import { useEditorStore } from "../../../../state/editor.store";
 import { cn } from "@senlo/ui";
 import { useDraggable } from "@dnd-kit/core";
@@ -60,6 +60,26 @@ export const BlockView = ({ block, columnId, rowId }: BlockViewProps) => {
   const activeDragType = useEditorStore((s) => s.activeDragType);
   const previewMode = useEditorStore((s) => s.previewMode);
   const previewContact = useEditorStore((s) => s.previewContact);
+
+  // Evaluate condition in preview mode
+  if (previewMode && block.condition) {
+    const isVisible = evaluateCondition(block.condition, {
+      responsiveStyles: [],
+      options: {
+        data: {
+          contact: previewContact || {},
+          custom: previewContact || {},
+          project: { name: "Sample Project" },
+          campaign: { name: "Sample Campaign" },
+          unsubscribeUrl: "https://senlo.io/unsubscribe/sample-token",
+        },
+      },
+    });
+
+    if (!isVisible) {
+      return null;
+    }
+  }
 
   const renderText = (text: string) => {
     const processedText = previewMode

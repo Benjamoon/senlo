@@ -1,7 +1,7 @@
 "use client";
 
 import styles from "./row-view.module.css";
-import { RowBlock } from "@senlo/core";
+import { RowBlock, evaluateCondition } from "@senlo/core";
 import { ColumnView } from "../column-view/column-view";
 import { RowDropZones } from "../row-drop-zones/row-drop-zones";
 import { RowViewMenu } from "../row-view-menu/row-view-menu";
@@ -22,6 +22,28 @@ export const RowView = ({ row }: RowViewProps) => {
   const setHoveredRowId = useEditorStore((s) => s.setHoveredRowId);
   // Get content width from global settings
   const contentWidth = useEditorStore((s) => s.design.settings?.contentWidth);
+  const previewMode = useEditorStore((s) => s.previewMode);
+  const previewContact = useEditorStore((s) => s.previewContact);
+
+  // Evaluate condition in preview mode
+  if (previewMode && row.condition) {
+    const isVisible = evaluateCondition(row.condition, {
+      responsiveStyles: [],
+      options: {
+        data: {
+          contact: previewContact || {},
+          custom: previewContact || {},
+          project: { name: "Sample Project" },
+          campaign: { name: "Sample Campaign" },
+          unsubscribeUrl: "https://senlo.io/unsubscribe/sample-token",
+        },
+      },
+    });
+
+    if (!isVisible) {
+      return null;
+    }
+  }
 
   const isSelected = selection?.kind === "row" && selection.id === row.id;
   const isHovered = isDragActive && hoveredRowId === row.id;
