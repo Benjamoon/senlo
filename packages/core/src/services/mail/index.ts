@@ -3,6 +3,7 @@ import { IMailer } from "../../ports";
 import { ResendMailer } from "./resendMailer";
 import { MailgunMailer } from "./mailgunMailer";
 import { SesMailer } from "./sesMailer";
+import { PostmarkMailer } from "./postmarkMailer";
 
 export class MailerFactory {
   static create(provider: EmailProvider): IMailer {
@@ -35,6 +36,16 @@ export class MailerFactory {
         return new SesMailer({ region, accessKeyId, secretAccessKey });
       }
 
+      case "POSTMARK": {
+        const serverToken = provider.config?.serverToken;
+        if (!serverToken) {
+          throw new Error(
+            "Postmark server token is missing in provider config",
+          );
+        }
+        return new PostmarkMailer(serverToken);
+      }
+
       default:
         throw new Error(
           `Unsupported email provider type: ${(provider as any).type}`,
@@ -46,5 +57,6 @@ export class MailerFactory {
 export { ResendMailer } from "./resendMailer";
 export { MailgunMailer } from "./mailgunMailer";
 export { SesMailer } from "./sesMailer";
+export { PostmarkMailer } from "./postmarkMailer";
 export type { MailgunConfig } from "./mailgunMailer";
 export type { SesConfig } from "./sesMailer";

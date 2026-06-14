@@ -47,7 +47,6 @@ export function TriggerWizard({
     templateId: "",
     fromName: "",
     fromEmail: "",
-    subject: "",
     type: "TRIGGERED" as const,
     variablesSchema: "",
   });
@@ -254,18 +253,6 @@ export function TriggerWizard({
         {step === "content" && (
           <div className="space-y-6">
             <FormField
-              label="Email Subject"
-              required
-              hint="What recipients will see in their inbox"
-            >
-              <Input
-                value={formData.subject}
-                onChange={(e) => updateField("subject", e.target.value)}
-                placeholder="Don't miss our winter sale!"
-              />
-            </FormField>
-
-            <FormField
               label="Select Template"
               required
               hint="Choose the design for this trigger"
@@ -346,10 +333,6 @@ export function TriggerWizard({
                   Content
                 </h4>
                 <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-zinc-500">Subject:</span>
-                    <span className="font-medium">{formData.subject}</span>
-                  </div>
                   <div className="flex justify-between text-sm items-center">
                     <span className="text-zinc-500">Template:</span>
                     <div className="flex items-center gap-2">
@@ -403,8 +386,7 @@ export function TriggerWizard({
               onClick={handleNext}
               disabled={
                 (step === "setup" && (!formData.name || !formData.projectId)) ||
-                (step === "content" &&
-                  (!formData.subject || !formData.templateId))
+                (step === "content" && !formData.templateId)
               }
             >
               Next Step

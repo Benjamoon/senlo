@@ -104,6 +104,7 @@ export const emailProviderTypeEnum = pgEnum("email_provider_type", [
   "RESEND",
   "MAILGUN",
   "SES",
+  "POSTMARK",
 ]);
 
 export const aiProviderTypeEnum = pgEnum("ai_provider_type", [

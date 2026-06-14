@@ -68,6 +68,11 @@ export default function AddProviderDialog({
             fieldErrors.secretAccessKey?.[0]
           ) {
             errorMessage = fieldErrors.secretAccessKey[0];
+          } else if (
+            "serverToken" in fieldErrors &&
+            fieldErrors.serverToken?.[0]
+          ) {
+            errorMessage = fieldErrors.serverToken[0];
           } else if ("general" in fieldErrors && fieldErrors.general?.[0]) {
             errorMessage = fieldErrors.general[0];
           }
@@ -120,6 +125,7 @@ export default function AddProviderDialog({
               <SelectItem value="RESEND">Resend</SelectItem>
               <SelectItem value="MAILGUN">Mailgun</SelectItem>
               <SelectItem value="SES">Amazon SES</SelectItem>
+              <SelectItem value="POSTMARK">Postmark</SelectItem>
             </SelectContent>
           </Select>
         </FormField>
@@ -221,6 +227,33 @@ export default function AddProviderDialog({
               hint="AWS Region where SES is configured"
             >
               <Input name="region" placeholder="us-east-1" required />
+            </FormField>
+          </>
+        )}
+        {type === "POSTMARK" && (
+          <>
+            <FormField
+              label="Server API Token"
+              required
+              hint="Your Postmark Server API Token"
+            >
+              <Input
+                name="serverToken"
+                type="password"
+                placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                required
+              />
+            </FormField>
+
+            <FormField
+              label="Webhook Secret"
+              hint="Optional: A secret to verify webhooks (sent in X-Postmark-Secret header)"
+            >
+              <Input
+                name="webhookSecret"
+                type="password"
+                placeholder="my-secret-token"
+              />
             </FormField>
           </>
         )}

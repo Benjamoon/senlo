@@ -94,15 +94,6 @@ export function TriggerConfigurationCard({
               Content & Templates
             </h4>
             <div className="space-y-2">
-              <div className="px-4 py-3 bg-blue-50/30 border border-blue-100/50 rounded-xl mb-2">
-                <div className="text-[10px] font-bold uppercase text-blue-600/60 mb-1.5 tracking-tight">
-                  Email Subject
-                </div>
-                <div className="text-sm font-medium text-zinc-900 leading-snug">
-                  {campaign.subject || template.subject}
-                </div>
-              </div>
-
               {/* Default Template */}
               <Link
                 href={`/editor/${template.id}?campaignId=${campaign.id}`}

@@ -41,7 +41,6 @@ export default function EditTriggerDialog({
     description: campaign.description || "",
     fromName: campaign.fromName || "",
     fromEmail: campaign.fromEmail || "",
-    subject: campaign.subject || "",
     variablesSchema: JSON.stringify(campaign.variablesSchema || {}, null, 2),
     localeTemplates: campaign.localeTemplates || {},
   });
@@ -140,16 +139,6 @@ export default function EditTriggerDialog({
             />
           </FormField>
         </div>
-
-        <FormField label="Email Subject">
-          <Input
-            value={formData.subject}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, subject: e.target.value }))
-            }
-            placeholder="Leave empty to use template subject"
-          />
-        </FormField>
 
         <FormField label="Description">
           <Textarea

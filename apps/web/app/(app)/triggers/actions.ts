@@ -236,7 +236,6 @@ export async function createCampaignAction(formData: FormData) {
     type,
     fromName,
     fromEmail,
-    subject,
     variablesSchema,
   } = parsed.data;
 
@@ -264,7 +263,6 @@ export async function createCampaignAction(formData: FormData) {
       variablesSchema,
       fromName,
       fromEmail,
-      subject,
       status: "DRAFT",
     });
 
@@ -307,7 +305,6 @@ export async function updateCampaignAction(id: number, formData: FormData) {
       description,
       fromName,
       fromEmail,
-      subject,
       variablesSchema,
       localeTemplates,
     } = parsed.data;
@@ -319,7 +316,6 @@ export async function updateCampaignAction(id: number, formData: FormData) {
       description,
       fromName,
       fromEmail,
-      subject,
       variablesSchema,
       localeTemplates,
     });

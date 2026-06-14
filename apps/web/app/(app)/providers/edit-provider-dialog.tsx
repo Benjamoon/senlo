@@ -69,6 +69,11 @@ export default function EditProviderDialog({
               fieldErrors.secretAccessKey?.[0]
             ) {
               errorMessage = fieldErrors.secretAccessKey[0];
+            } else if (
+              "serverToken" in fieldErrors &&
+              fieldErrors.serverToken?.[0]
+            ) {
+              errorMessage = fieldErrors.serverToken[0];
             } else if ("general" in fieldErrors && fieldErrors.general?.[0]) {
               errorMessage = fieldErrors.general[0];
             }
@@ -121,6 +126,7 @@ export default function EditProviderDialog({
               <SelectItem value="RESEND">Resend</SelectItem>
               <SelectItem value="MAILGUN">Mailgun</SelectItem>
               <SelectItem value="SES">Amazon SES</SelectItem>
+              <SelectItem value="POSTMARK">Postmark</SelectItem>
             </SelectContent>
           </Select>
         </FormField>
@@ -215,6 +221,32 @@ export default function EditProviderDialog({
                 defaultValue={(provider.config.region as string) || ""}
                 placeholder="us-east-1"
                 required
+              />
+            </FormField>
+          </>
+        )}
+        {type === "POSTMARK" && (
+          <>
+            <FormField
+              label="Server API Token"
+              hint="Leave empty to keep current token"
+            >
+              <Input
+                name="serverToken"
+                type="password"
+                placeholder="••••••••-••••-••••-••••-••••••••••••"
+              />
+            </FormField>
+
+            <FormField
+              label="Webhook Secret"
+              hint="Optional: A secret to verify webhooks (sent in X-Postmark-Secret header)"
+            >
+              <Input
+                name="webhookSecret"
+                type="password"
+                defaultValue={(provider.config.webhook_secret as string) || ""}
+                placeholder="my-secret-token"
               />
             </FormField>
           </>

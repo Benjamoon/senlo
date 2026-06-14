@@ -9,6 +9,7 @@ export const CreateProviderSchema = z.object({
   region: z.string().trim().optional().default("US"),
   accessKeyId: z.string().trim().optional(),
   secretAccessKey: z.string().trim().optional(),
+  serverToken: z.string().trim().optional(),
 });
 
 export const UpdateProviderSchema = CreateProviderSchema.partial();

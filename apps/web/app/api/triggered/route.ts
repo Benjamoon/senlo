@@ -10,6 +10,7 @@ import {
   renderEmailDesign,
   wrapLinksWithTracking,
   EmailDesignDocument,
+  replaceMergeTags,
 } from "@senlo/core";
 import { emailQueue } from "@senlo/core/src/queue";
 import { logger, validateApiKey } from "apps/web/lib";
@@ -20,6 +21,7 @@ interface TriggeredEmailRequest {
   to: string;
   data?: Record<string, unknown>;
   locale?: string;
+  subject?: string;
 }
 
 const campaignRepo = new CampaignRepository();
@@ -44,7 +46,14 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
-    const { id, campaignId: bodyCampaignId, to, data, locale } = body;
+    const {
+      id,
+      campaignId: bodyCampaignId,
+      to,
+      data,
+      locale,
+      subject: subjectOverride,
+    } = body;
     const campaignId = id || bodyCampaignId;
 
     if (!campaignId || !to) {
@@ -141,6 +150,14 @@ export async function POST(req: NextRequest) {
       ? `${campaign.fromName} <${campaign.fromEmail || "hello@senlo.io"}>`
       : campaign.fromEmail || "hello@senlo.io";
 
+    // Prepare subject with merge tags support
+    const rawSubject = subjectOverride || template.subject;
+    const personalizedSubject = replaceMergeTags(rawSubject, {
+      custom: data,
+      contact: { email: to, ...data },
+      project: { name: project.name },
+    });
+
     const log = await logRepo.create({
       campaignId: campaign.id,
       email: to,
@@ -158,7 +175,7 @@ export async function POST(req: NextRequest) {
         logId: log.id,
         email: to,
         from: fromAddress,
-        subject: campaign.subject || template.subject,
+        subject: personalizedSubject,
         html: personalizedHtml,
         providerId: project.providerId,
         replyTo: campaign.replyTo || undefined,

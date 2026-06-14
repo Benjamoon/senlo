@@ -26,6 +26,7 @@ export function WebhookInfo({
     {
       id: campaignId,
       to: "customer@example.com",
+      subject: "this value will override template subject",
       data: sampleData || {
         user_name: "Alex",
         order_id: "#12345",
@@ -33,7 +34,7 @@ export function WebhookInfo({
       ...(hasLocales ? { locale: "en" } : {}),
     },
     null,
-    2
+    2,
   );
 
   const copyToClipboard = (text: string) => {
@@ -84,7 +85,7 @@ export function WebhookInfo({
 
         <div className="space-y-2">
           <label className="text-xs font-bold uppercase text-blue-800/60 tracking-wider">
-            Sample Payload (POST)
+            Sample Payload (POST) - Updated
           </label>
           <div className="relative group">
             <pre className="p-4 bg-zinc-900 text-zinc-100 rounded-xl text-xs font-mono overflow-x-auto leading-relaxed shadow-inner">
@@ -111,12 +112,16 @@ export function WebhookInfo({
             </p>
             <p>
               The <code>data</code> object properties will be used to replace
-              merge tags.
+              merge tags in both the subject and body.
+            </p>
+            <p>
+              The <code>subject</code> field is optional and overrides the
+              template subject.
             </p>
             {hasLocales && (
               <p>
-                Use the <code>locale</code> field to trigger a specific
-                language variant of this email.
+                Use the <code>locale</code> field to trigger a specific language
+                variant of this email.
               </p>
             )}
           </div>

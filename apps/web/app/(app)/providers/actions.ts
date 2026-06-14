@@ -22,6 +22,7 @@ export type CreateProviderError = {
       region?: string[];
       accessKeyId?: string[];
       secretAccessKey?: string[];
+      serverToken?: string[];
       general?: string[];
     };
   };
@@ -75,6 +76,7 @@ export async function createProviderAction(
     region,
     accessKeyId,
     secretAccessKey,
+    serverToken,
   } = parsed.data;
 
   try {
@@ -131,6 +133,16 @@ export async function createProviderAction(
         secretAccessKey,
         region,
       };
+    } else if (type === "POSTMARK") {
+      if (!serverToken) {
+        return {
+          error: {
+            formErrors: [],
+            fieldErrors: { serverToken: ["Postmark server token is required"] },
+          },
+        };
+      }
+      config = { serverToken, webhook_secret: webhookSecret || "" };
     }
 
     logger.info("Creating email provider", {
@@ -230,6 +242,7 @@ export async function updateProviderAction(
     region,
     accessKeyId,
     secretAccessKey,
+    serverToken,
   } = parsed.data;
 
   try {
@@ -250,6 +263,10 @@ export async function updateProviderAction(
       if (accessKeyId) updatedConfig.accessKeyId = accessKeyId;
       if (secretAccessKey) updatedConfig.secretAccessKey = secretAccessKey;
       if (region) updatedConfig.region = region;
+    } else if (type === "POSTMARK" || provider.type === "POSTMARK") {
+      if (serverToken) updatedConfig.serverToken = serverToken;
+      if (webhookSecret !== undefined)
+        updatedConfig.webhook_secret = webhookSecret;
     }
 
     const updatedProvider = await providerRepo.update(id, {
